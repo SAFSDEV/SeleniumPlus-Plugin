@@ -1,0 +1,561 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.eclipse.ui.newWizards">
+      <category
+            id="customplugin.category.wizards"
+            name="Selenium+">
+      </category>
+      <wizard
+            category="customplugin.category.wizards"
+            class="com.sas.seleniumplus.projects.SeleniumProjectNewWizard"
+            finalPerspective="customplugin.perspective"
+            icon="icons/splus.png"
+            id="customplugin.wizard.new.custom"
+            name="Selenium+ Project"
+            project="true">
+      </wizard>
+      <wizard
+            category="customplugin.category.wizards"
+            class="com.sas.seleniumplus.projects.SampleProjectNewWizard"
+            finalPerspective="customplugin.perspective"
+            icon="icons/splus.png"
+            id="Seleniumplus_plugin.wizard.sample"
+            name="Selenium+ Sample Project"
+            project="true">
+      </wizard>
+      <wizard
+            category="customplugin.category.wizards"
+            class="com.sas.seleniumplus.projects.AdvanceProjectNewWizard"
+            finalPerspective="customplugin.perspective"
+            icon="icons/splus.png"
+            id="Seleniumplus_plugin.wizardAd"
+            name="Selenium+ Project (Advance)"
+            project="true">
+      </wizard>
+   </extension>
+   <extension
+         point="org.eclipse.ui.perspectives">
+      <perspective
+            class="com.sas.seleniumplus.perspectives.Perspective"
+            icon="icons/splus.png"
+            id="customplugin.perspective"
+            name="Selenium+">
+      </perspective>
+   </extension>
+   <extension
+         point="org.eclipse.ui.perspectiveExtensions">
+      <perspectiveExtension
+            targetID="customplugin.perspective">
+         <view
+               id="org.eclipse.jdt.ui.PackageExplorer"
+               minimized="false"
+               ratio="0.20"
+               relationship="left"
+               relative="org.eclipse.ui.editorss">
+         </view>
+         <view
+               id="org.eclipse.ui.console.ConsoleView"
+               minimized="false"
+               ratio="0.75"
+               relationship="bottom"
+               relative="org.eclipse.ui.editorss">
+         </view>
+         <hiddenMenuItem
+               id="org.eclipse.debug.internal.ui.actions.RunDropDownAction">
+         </hiddenMenuItem>
+      </perspectiveExtension>
+   </extension>
+   <extension
+         id="seleniumplus.projectNature"
+         point="org.eclipse.core.resources.natures">
+      <runtime>
+         <run
+               class="com.sas.seleniumplus.natures.ProjectNature">
+         </run>
+      </runtime>
+   </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+              locationURI="popup:org.eclipse.jdt.ui.PackageExplorer">
+           <menu
+                 label="Selenium+">           
+		         <command
+		               commandId="customplugin.createpackage"
+		               label="Create Package/Folder"
+		               style="push">
+		                <visibleWhen>
+				           <with variable="activeMenuSelection">
+				            <iterate ifEmpty="false">
+				               <or>
+					             <adapt type="org.eclipse.core.resources.IResource">				               
+					               <test property="org.eclipse.core.resources.name" value="Tests" />
+					               <instanceof value="org.eclipse.core.resources.IFolder" />
+					             </adapt>
+					             <adapt type="org.eclipse.core.resources.IResource">				               
+					               <test property="org.eclipse.core.resources.path" value="*Tests/*" />
+					               <instanceof value="org.eclipse.core.resources.IFolder" />
+					             </adapt>
+				                </or>
+				            </iterate>
+				           </with>
+         			</visibleWhen>
+		         </command>
+           <command
+                 commandId="customplugin.createtestclass"
+                 label="Create Test File"
+                 style="push">
+                  <visibleWhen>
+				       <with variable="activeMenuSelection">
+				          <iterate ifEmpty="false">
+				             <or>
+					             <adapt type="org.eclipse.core.resources.IResource">
+					               <test property="org.eclipse.core.resources.path" value="*Tests/*" />
+					               <instanceof value="org.eclipse.core.resources.IFolder" />
+					             </adapt>
+					             <adapt type="org.eclipse.core.resources.IResource">				               
+					               <test property="org.eclipse.core.resources.name" value="Tests" />
+					               <instanceof value="org.eclipse.core.resources.IFolder" />
+					             </adapt>
+				             </or>
+                             <not>
+                                 <adapt type="org.eclipse.core.resources.IResource">
+                                     <test property="org.eclipse.core.resources.path" value="*/map" />
+                                 </adapt>
+                             </not>
+				          </iterate>
+				       </with>
+         		</visibleWhen>
+           </command>
+           <command
+                 commandId="customplugin.createmap"
+                 label="Create Map"
+                 style="push">
+                  <visibleWhen>
+				           <with variable="activeMenuSelection">
+				            <iterate ifEmpty="false">
+				             <adapt type="org.eclipse.core.resources.IResource">
+				               <test property="org.eclipse.core.resources.name" value="Maps" />
+				               <instanceof value="org.eclipse.core.resources.IFolder" />
+				             </adapt>
+				            </iterate>
+				           </with>
+         			</visibleWhen>
+           </command>
+           <command
+                 commandId="customplugin.createmaporder"
+                 label="Create Map Order"
+                 style="push">
+              <visibleWhen>
+                 <with variable="activeMenuSelection">
+                    <iterate
+                          ifEmpty="false">
+                       <adapt type="org.eclipse.core.resources.IResource">
+                          <test property="org.eclipse.core.resources.name" value="Maps" />
+				               <instanceof value="org.eclipse.core.resources.IFolder" />
+                       </adapt>
+                    </iterate>
+                 </with>
+              </visibleWhen>
+           </command>
+		        </menu>
+      </menuContribution>
+      <menuContribution
+            allPopups="false"
+            locationURI=" popup:common.new.menu?after=additions">
+         <command
+               commandId="org.eclipse.ui.newWizard"
+               label="Selenium+"
+               style="push">
+         </command>
+      </menuContribution>
+      <menuContribution
+            allPopups="false"
+            locationURI="menu:org.eclipse.ui.main.menu?after=additions">
+         <menu
+               id="seleniummenu"
+               label="Selenium+">
+         </menu>
+      </menuContribution>
+      <menuContribution
+            allPopups="false"
+            locationURI="menu:seleniummenu?after=additions">
+         <menu
+               id="remoteserver"
+               label="Remote Server">
+         </menu>
+         <separator
+               name="sremoteserver"
+               visible="true">
+         </separator>
+      </menuContribution>
+      <menuContribution
+            allPopups="false"
+            locationURI="menu:remoteserver?after=additions">
+         <command
+               commandId="remoteserverstart"
+               label="Start"
+               style="push">
+         </command>
+         <command
+               commandId="remoteserverstop"
+               label="Stop"
+               style="push">
+         </command>
+      </menuContribution>
+      <menuContribution
+            allPopups="false"
+            locationURI="menu:seleniummenu?after=additions">
+         <menu
+               id="processcontainer"
+               label="Process Container">
+         </menu>
+         <separator
+               name="sprocesscontainer"
+               visible="true">
+         </separator>
+      </menuContribution>
+      <menuContribution
+            allPopups="false"
+            locationURI="menu:processcontainer?after=additions">
+         <command
+               commandId="useprocesscontainer"
+               label="Using ProcessContainer"
+               style="push">
+         </command>
+         <command
+               commandId="launchprocesscontainer"
+               label="Launch ProcessContainer"
+               style="push">
+         </command>
+      </menuContribution>
+      <menuContribution
+            allPopups="false"
+            locationURI="menu:seleniummenu?after=additions">
+         <menu
+               id="documents"
+               label="Documents">
+         </menu>
+         <separator
+               name="sdoc"
+               visible="true">
+         </separator>
+      </menuContribution>
+      <menuContribution
+            allPopups="false"
+            locationURI="menu:documents?after=additions">
+         <command
+               commandId="selenumpluskeyword"
+               label="SeleniumPlus"
+               style="push">
+         </command>
+         <command
+               commandId="useprocesscontainer"
+               label="Using ProcessContainer"
+               style="push">
+         </command>
+         <command
+               commandId="seldoc"
+               label="SeleniumPlus keyword doc"
+               style="push">
+         </command>
+         <command
+               commandId="whatsnewdoc"
+               label="Whats New"
+               style="push">
+         </command>
+         <command
+               commandId="xpathbytable"
+               label="XPATH ref By Tables "
+               style="push">
+         </command>
+         <command
+               commandId="xpathbygroup"
+               label="XPATH ref By Groups"
+               style="push">
+         </command>
+      </menuContribution>
+      <menuContribution
+            allPopups="false"
+            locationURI="menu:updatesite?after=additions">
+         <command
+               commandId="seleniumplusupdate"
+               label="Update SeleniumPlus"
+               style="push">
+         </command>
+         <separator
+               name="supdatesite"
+               visible="true">
+         </separator>
+      </menuContribution>
+      <menuContribution
+            allPopups="false"
+            locationURI="menu:updatesite?after=additions">
+         <command
+               commandId="refreshbuildpath"
+               label="Refresh Build Path"
+               style="push">
+         </command>
+         <separator
+               name="srefresh"
+               visible="true">
+         </separator>
+      </menuContribution>
+      <menuContribution
+            allPopups="false"
+            locationURI="menu:updatesite?after=additions">
+         <command
+               commandId="checkversion"
+               label="Selenium Server Version"
+               style="push">
+         </command>
+         <separator
+               name="scheckversion"
+               visible="true">
+         </separator>
+      </menuContribution>
+      <menuContribution
+            allPopups="false"
+            locationURI="menu:seleniummenu?after=additions">
+         <separator
+               name="supdatesite"
+               visible="true">
+         </separator>
+         <menu
+               id="updatesite"
+               label="Update">
+         </menu>
+      </menuContribution>
+   </extension>   
+   <extension
+         point="org.eclipse.ui.commands">
+      <command
+            defaultHandler="com.sas.seleniumplus.popupmenu.TestCase"
+            id="customplugin.createtestclass"
+            name="CreateTestCase">
+      </command>
+      <command
+            defaultHandler="com.sas.seleniumplus.popupmenu.Map"
+            id="customplugin.createmap"
+            name="CreateMap">
+      </command>
+      <command
+      	 	defaultHandler="com.sas.seleniumplus.popupmenu.Package"
+            id="customplugin.createpackage"
+            name="CreatePackage">
+      </command>
+      <command
+            defaultHandler="com.sas.seleniumplus.popupmenu.MapOrder"
+            id="customplugin.createmaporder"
+            name="CreateMapOrder">
+      </command>
+      <command
+            defaultHandler="com.sas.seleniumplus.popupmenu.StartServer"
+            id="remoteserverstart"
+            name="RemoteServerStart">
+      </command>
+      <command
+            defaultHandler="com.sas.seleniumplus.popupmenu.StopServer"
+            id="remoteserverstop"
+            name="RemoteServerStop">
+      </command>
+      <command
+            defaultHandler="com.sas.seleniumplus.popupmenu.Seleniumplusdoc"
+            id="selenumpluskeyword"
+            name="seleniumplusdoc">
+      </command>
+      <command
+            defaultHandler="com.sas.seleniumplus.popupmenu.WhatsNewDoc"
+            id="whatsnewdoc"
+            name="Whats New">
+      </command>
+      <command
+            defaultHandler="com.sas.seleniumplus.popupmenu.UseProcessContainer"
+            id="useprocesscontainer"
+            name="UsingProcessContainer">
+      </command>
+      <command
+               defaultHandler="com.sas.seleniumplus.popupmenu.LaunchProcessContainer"
+               id="launchprocesscontainer"
+               name="LaunchProcessContainer">
+      </command>
+      <command
+            defaultHandler="com.sas.seleniumplus.popupmenu.RefreshJars"
+            id="refreshbuildpath"
+            name="RefreshBuildPath">
+      </command>
+      <command
+            defaultHandler="com.sas.seleniumplus.popupmenu.UpdateSeleniumPlus"
+            id="seleniumplusupdate"
+            name="Update SeleniumPlus">
+      </command>
+      <command
+            defaultHandler="com.sas.seleniumplus.popupmenu.CheckVersion"
+            id="checkversion"
+            name="SeleniumVersion">
+      </command>
+      <command
+            defaultHandler="com.sas.seleniumplus.popupmenu.XpathTabledoc"
+            id="xpathbytable"
+            name="xpathtable">
+      </command>
+      <command
+            id="xpath"
+            name="name">
+      </command>
+      <command
+            defaultHandler="com.sas.seleniumplus.popupmenu.XpathGroupdoc"
+            id="xpathbygroup"
+            name="xpathbygroup">
+      </command>
+      <command
+            defaultHandler="com.sas.seleniumplus.popupmenu.SelKeyworddoc"
+            id="seldoc"
+            name="seleniumpluskeywddoc">
+      </command>
+      
+   </extension>   
+	 <extension
+	         point="org.eclipse.ui.popupMenus">
+	      <objectContribution
+             id="customplugin.editormethod"
+             nameFilter="*.*"
+             objectClass="org.eclipse.ui.IEditorInput">
+	         <menu
+	               label="Selenium+"
+	               path="additions"
+	               id="customplugin.editormethod.menu1">
+	            <separator
+	                  name="group1">
+	            </separator>
+	         </menu>
+	         <action
+                class="com.sas.seleniumplus.popupmenu.AddMethodAction"
+                id="customplugin.editormethod.newAction"
+                label="Insert Test"
+                menubarPath="customplugin.editormethod.menu1/group1"
+                style="push">
+	         </action>
+	      </objectContribution>
+	   </extension>
+  <extension
+        id="com.sas.seleniumplus.builders.AppMapBuilder"
+        name="AppMapBuilder"
+        point="org.eclipse.core.resources.builders">
+     <builder>
+        <run
+              class="com.sas.seleniumplus.builders.AppMapBuilder">
+        </run>
+     </builder>
+  </extension>
+  <extension
+        point="org.eclipse.jdt.ui.javaElementFilters">
+     <filter
+           id="customplugin.javafilter"
+           pattern="*librar*">
+     </filter>
+     <filter
+           id="customplugin.maphide"
+           pattern="Map.java">
+     </filter>
+     <filter
+           id="customplugin.cmdhide"
+           pattern="*.bat">
+     </filter>
+     <filter
+           id="customplugin.projectjarhide"
+           pattern="runpackage.jar">
+     </filter>
+     
+  </extension>
+ <extension point="org.eclipse.debug.ui.launchShortcuts">
+    <shortcut
+          class="com.sas.seleniumplus.builders.LaunchApp"
+          id="org.eclipse.jdt.debug.ui.localJavaShortcut"
+          label="Selenium+ Test"
+          modes="run">
+       <contextualLaunch>
+         <enablement>
+           <with variable="selection">
+             <count value="1"/>
+              <iterate>
+               <and>
+                <adapt type="org.eclipse.core.resources.IResource">
+                        <test
+                              property="org.eclipse.core.resources.name"
+                              value="*.java"/>
+                </adapt>
+               </and>
+              </iterate>
+             </with>
+         </enablement>
+                </contextualLaunch>
+       <description
+             description="Run Selenium+ Test"
+             mode="run">
+       </description>
+    </shortcut>
+ </extension>
+ <extension
+       point="org.eclipse.core.runtime.contentTypes">
+    <content-type
+          base-type="org.eclipse.core.runtime.text"
+          describer="org.eclipse.core.internal.content.TextContentDescriber"
+          file-extensions="ini,map,order,json,txt"
+          id="Seleniumplus_plugin.content-typeFiles"
+          name="Selenium Files"
+          priority="normal">
+    </content-type>
+ </extension>
+ <extension
+       point="org.eclipse.core.runtime.products">
+    <product
+          application="customplugin"
+          name="name">
+    </product>
+ </extension>
+ <extension
+       point="org.eclipse.ui.preferencePages">
+    <page
+          class="com.sas.seleniumplus.preferences.SelPlusPrefPage"
+          id="seleniumplus.prefrances"
+          name="Selenium+">
+    </page>
+    <page 
+         id="seleniumplus.updatesite" 
+         name="Update Site" 
+         class="com.sas.seleniumplus.preferences.UpdateSite" 
+         category="seleniumplus.prefrances"> 
+      </page>
+    <page
+          category="seleniumplus.prefrances"
+          class="com.sas.seleniumplus.preferences.RemoteServer"
+          id="seleniumplus.remoteserver"
+          name="Remote Server">
+    </page>     
+ </extension>
+ <extension
+       point="org.eclipse.core.runtime.preferences">
+    <initializer
+          class="com.sas.seleniumplus.preferences.PreferenceInitializer">
+    </initializer>
+ </extension> 
+  
+ <extension  point="org.eclipse.ui.startup" />
+ <extension
+       point="org.eclipse.debug.ui.consoleLineTrackers">
+    <consoleLineTracker
+          class="com.sas.seleniumplus.consoles.TestErrorConsoleLineTracker"
+          id="com.sas.seleniumplus.consoles.TestErrorConsoleLineTracker"
+          processType="java">
+    </consoleLineTracker>
+ </extension>
+ <extension point="org.eclipse.core.resources.markers" id="com.sas.seleniumplus.consoles.SourceLineMarker"
+  name="SourceLineMarker">
+	<super type="org.eclipse.core.resources.marker"/>
+	<persistent value="false"/><attribute name="description"/>
+</extension>
+
+</plugin>
