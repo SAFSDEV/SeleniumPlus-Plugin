@@ -3,6 +3,7 @@ package com.sas.seleniumplus.popupmenu;
 /**
  * JUN 30, 2015	(LeiWang) Modify getProxySettings(): ***REMOVED***
  * JUL 10, 2015 (Carl Nagle) Refactor getProxySettings and execute to use existing System network configuration provided by Eclipse.
+ * SEP 03, 2015 (Carl Nagle) trim lib url and plugin url from Preferences to prevent update errors.
  */
 
 import java.io.File;
@@ -45,9 +46,11 @@ public class UpdateSeleniumPlus extends AbstractHandler {
 		
 		String url = Activator.getDefault().getPreferenceStore()
 			        .getString(PreferenceConstants.UPDATESITE_LIB_URL);		
+		url = url==null ? null: url.trim();
 		
 		String pluginurl = Activator.getDefault().getPreferenceStore()
 		        .getString(PreferenceConstants.UPDATESITE_PLUGIN_URL);
+		pluginurl = pluginurl==null ? null: pluginurl.trim();
 		
 		String timeout_st = Activator.getDefault().getPreferenceStore()
 		        .getString(PreferenceConstants.TIME_OUT);
