@@ -8,6 +8,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IResourceChangeEvent;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
@@ -33,6 +34,7 @@ import org.safs.tools.CaseInsensitiveFile;
 
 import com.sas.seleniumplus.natures.ProjectNature;
 import com.sas.seleniumplus.projects.BaseProject;
+import com.sas.seleniumplus.projects.ProjectAddListener;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -60,6 +62,7 @@ public class Activator extends AbstractUIPlugin implements org.eclipse.ui.IStart
 	public void earlyStartup() {
 		try{
 			checkSeleniumPlusClasspath();
+			ResourcesPlugin.getWorkspace().addResourceChangeListener(ProjectAddListener.LISTENER, IResourceChangeEvent.POST_CHANGE);
 		}catch(Exception x){
 			Activator.log("Ignoring "+ x.getClass().getName()+", "+x.getMessage());
 		}
@@ -71,7 +74,7 @@ public class Activator extends AbstractUIPlugin implements org.eclipse.ui.IStart
 	@Override
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
-		plugin = this;
+		plugin = this;		
 	}
 
 	/**
@@ -110,6 +113,7 @@ public class Activator extends AbstractUIPlugin implements org.eclipse.ui.IStart
 	@Override
 	public void stop(BundleContext context) throws Exception {
 		plugin = null;
+		ResourcesPlugin.getWorkspace().removeResourceChangeListener(ProjectAddListener.LISTENER);
 		super.stop(context);
 	}
 
