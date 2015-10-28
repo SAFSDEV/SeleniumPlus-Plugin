@@ -5,10 +5,10 @@ package com.sas.seleniumplus.preferences;
  */
 public class PreferenceConstants {
 
-	public static final String DOWNLOAD_URl_LIB = "http://sourceforge.net/projects/safsdev/files/"
-			+ "SeleniumPlusUpdates/LibraryUpdates/latest/SEPLUS.LIB.UPDATE.ZIP";	
-	public static final String DOWNLOAD_URL_PLUGIN = "http://sourceforge.net/projects/safsdev/files/"
-			+ "SeleniumPlusUpdates/PlugInUpdates/latest/SEPLUS.PLUGIN.UPDATE.ZIP";	
+	public static final String DOWNLOAD_URl_LIB = "https://github.com/SAFSDEV/"
+			+ "UpdateSite/releases/download/seleniumplus/SEPLUS.LIB.UPDATE.ZIP";	
+	public static final String DOWNLOAD_URL_PLUGIN = "https://github.com/SAFSDEV/"
+			+ "UpdateSite/releases/download/seleniumplus/SEPLUS.PLUGIN.UPDATE.ZIP";	
 	public static final String BOOLEAN_VALUE_LIB = "chkLibValue";
 	public static final String BOOLEAN_VALUE_PLUGIN = "chkPluginValue";
 	public static String UPDATESITE_LIB_URL = "UpdatesiteLibUrl";
