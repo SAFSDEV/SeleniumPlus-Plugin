@@ -3,6 +3,7 @@ package com.sas.seleniumplus.popupmenu;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 import javax.swing.JOptionPane;
 
@@ -118,7 +119,7 @@ public class CommonLib {
 				new Path(Activator.SELENIUMPLUS_HOME + "/libs/"
 						+ BaseProject.JSTAF_EMBEDDDED_JAR), null, null);
 
-		return new IClasspathEntry[]{selenium_server_jar, seleniumplus_jar, jstaf_embedded_jar};
+		return new IClasspathEntry[]{seleniumplus_jar, jstaf_embedded_jar, selenium_server_jar};
 	}
 	
 	/**
@@ -133,38 +134,34 @@ public class CommonLib {
 	 * @throws CoreException -- most likely if we are trying to process a Closed project.
 	 * @see #getLatestSeleniumPlusJARS()
 	 */
-	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public boolean refreshBuildPath(IProject iP, IClasspathEntry... cpEntries) throws CoreException, ExecutionException {
 		try {
 			
-			Activator.log("CommonLib.refreshBuildPath(IProject) processing Project " + iP.getName());
+			Activator.log("CommonLib.refreshBuildPath(IProject) processing Project " + iP.getName()+" with Classpath Entries: "+Arrays.toString(cpEntries));
 		
-			ArrayList entriesToSave = new ArrayList();
+			ArrayList<IClasspathEntry> entriesToSave = new ArrayList<IClasspathEntry>();
 			boolean isSeleniumPlus = false;
 			IJavaProject javaProject = (IJavaProject) iP.getNature(JavaCore.NATURE_ID);
 			IClasspathEntry[] existingEntries = new IClasspathEntry[]{};
 			
 		    if (javaProject != null) 
 		    	existingEntries = javaProject.getRawClasspath();
-		    
 							
-			for (int i = 0; i < existingEntries.length; i++) {
-					IClasspathEntry entry = existingEntries[i];
+		    for (int i = 0; i < existingEntries.length; i++) {
+		    	IClasspathEntry entry = existingEntries[i];
 
-					if (entry.getPath().toString()
-							.contains(BaseProject.SELENIUMPLUS_JAR)
-							|| entry.getPath().toString()
-									.contains(BaseProject.JSTAF_EMBEDDDED_JAR)) {
+		    	if (entry.getPath().toString().contains(BaseProject.SELENIUMPLUS_JAR) ||
+		    		entry.getPath().toString().contains(BaseProject.JSTAF_EMBEDDDED_JAR)) {
 
-						isSeleniumPlus = true;								
-						entry = null;
-						break;
-					}
-			}
+		    		isSeleniumPlus = true;								
+		    		entry = null;
+		    		break;
+		    	}
+		    }
 
 			if (isSeleniumPlus) {
-
 				Activator.log(iP.getName()+" does appear to be a SeleniumPlus Project.");
+				String pathName = null;
 				
 				for (int j = 0; j < existingEntries.length; j++) {
 
@@ -172,34 +169,24 @@ public class CommonLib {
 
 					if (entry.getEntryKind() == IClasspathEntry.CPE_VARIABLE
 							|| entry.getEntryKind() == IClasspathEntry.CPE_LIBRARY) {
+						pathName = entry.getPath().toString();
 
-						if (entry
-								.getPath()
-								.toString()
-								.contains(
-										BaseProject.SELENIUM_SERVER_JAR_PART_NAME))
+						if (pathName.contains(BaseProject.SELENIUM_SERVER_JAR_PART_NAME) ||
+							pathName.contains(BaseProject.SELENIUMPLUS_JAR) ||
+							pathName.contains(BaseProject.JSTAF_EMBEDDDED_JAR)){
 							continue;
-
-						if (entry.getPath().toString()
-								.contains(BaseProject.SELENIUMPLUS_JAR))
-
-							continue;
-
-						if (entry.getPath().toString()
-								.contains(BaseProject.JSTAF_EMBEDDDED_JAR))
-							continue;
+						}
 
 					}
 					entriesToSave.add(entry);
 				}
 
-				Activator.log(iP.getName()+" preparing to receive new SeleniumPlus Classpath Entries.");				
-				for(IClasspathEntry cp: cpEntries){
-					entriesToSave.add(cp);
+				if(cpEntries!=null && cpEntries.length>0){
+					for(IClasspathEntry cp: cpEntries) entriesToSave.add(cp);
 				}
-				
-				IClasspathEntry[] newClasspath = (IClasspathEntry[]) entriesToSave
-						.toArray(new IClasspathEntry[0]);
+
+				IClasspathEntry[] newClasspath = entriesToSave.toArray(new IClasspathEntry[0]);
+				Activator.log(iP.getName()+" set new Classpath Entries: "+Arrays.toString(newClasspath));
 				javaProject.setRawClasspath(newClasspath, null);
 				javaProject.save(null, true);
 				entriesToSave = null;
