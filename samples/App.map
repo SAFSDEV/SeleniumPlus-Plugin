@@ -30,9 +30,8 @@ SignIn="Text={^nlsSignIn}"
 
 [LogIn]
 UserName="name=Email"
-UserNameNext="name=signIn"
+UserNameNext="id=next"
 Passwd="name=Passwd"
-SignIn="name=signIn"
+SignIn="id=signIn"
 OneGoogle="alt=Google"
 LogIn="class=main"
-
