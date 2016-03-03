@@ -1,13 +1,12 @@
 package sample.testcases;
 
 import org.safs.selenium.webdriver.SeleniumPlus;
-import org.safs.selenium.webdriver.lib.SelectBrowser;
 
 import sample.Map;
 
 public class TestCase1 extends SeleniumPlus{
 
-	static String browserID;
+	private static String browserID;
 
 	/**
 	 * Start WebBrowser, FireFox is default browser
@@ -47,7 +46,10 @@ public class TestCase1 extends SeleniumPlus{
 		// Click call with literal coords is NOT as maintainable as the one at bottom
 		if(! Click(Map.Google.SignIn,"5,5"))
 			AbortTest("Google Not Found.  Test Aborting");
+		
 		EditBox.SetTextValue(Map.LogIn.UserName, GetVariableValue(Map.GoogleUser));
+		Click(Map.LogIn.UserNameNext,Map.TopLeft);
+		
 		EditBox.SetTextValue(Map.LogIn.Passwd, GetVariableValue(Map.GooglePassword));
 		// This is the preferred type of Click call using coords
 		Click(Map.LogIn.SignIn, Map.TopLeft);
