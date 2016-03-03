@@ -79,8 +79,15 @@ public class TestCase1 extends SeleniumPlus{
 
 		try{
 		    startBrowser();
-		    LogIn();
+		    
+		    //Turn on the "highlight" during debug so that the component will be circled with a red rectangle
+		    SeleniumPlus.Highlight(true);
+		    LogIn();		    
+		    //Turn off the "highlight" for better performance after debug.
+		    SeleniumPlus.Highlight(false);
+		    
 		    takeScreenshot();
+		    
 		}
 		catch(Throwable x){
 		    Logging.LogTestFailure(x.getMessage());
