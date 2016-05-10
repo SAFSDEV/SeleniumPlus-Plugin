@@ -8,7 +8,6 @@ package com.sas.seleniumplus.popupmenu;
 
 import java.io.File;
 import java.net.URI;
-import java.net.URL;
 
 import javax.swing.JOptionPane;
 
@@ -177,7 +176,7 @@ public class UpdateSeleniumPlus extends AbstractHandler {
 						"Refresh Now", 
 						"I will do it Later"
 				};
-				int selected = JOptionPane.showOptionDialog(null, 
+				int selected = TopMostOptionPane.showOptionDialog(null, 
 						"SeleniumPlus PlugIn was Updated.\n"+
 				        "Eclipse Workspace will need to be refreshed.\n\n"+
 						"Refresh Now? Or do it yourself Later.", 
@@ -197,10 +196,10 @@ public class UpdateSeleniumPlus extends AbstractHandler {
 			if (library_update > 0) {
 				CommonLib clib = new CommonLib();						
 				clib.refreshBuildPath();
-				JOptionPane.showConfirmDialog(null, "SeleniumPlus refreshed Java Build Path successfully.", 
+				TopMostOptionPane.showConfirmDialog(null, "SeleniumPlus refreshed Java Build Path successfully.", 
 	                    "Update Complete", JOptionPane.CLOSED_OPTION);
 			}
-			JOptionPane.showOptionDialog(null, "SeleniumPlus Update process has completed.", 
+			TopMostOptionPane.showOptionDialog(null, "SeleniumPlus Update process has completed.", 
                     "Update Complete", JOptionPane.OK_OPTION, JOptionPane.INFORMATION_MESSAGE,
                     null, new Object[]{"OK"}, "OK");
 
@@ -285,7 +284,7 @@ public class UpdateSeleniumPlus extends AbstractHandler {
 		    	Thread.sleep(10);
 		    	if ( System.currentTimeMillis() > finish) {
 		    		process.destroy();
-		    		JOptionPane.showConfirmDialog(null, "Update process timeout.\n"
+		    		TopMostOptionPane.showConfirmDialog(null, "Update process timeout.\n"
 		    				+ "It could be slow network connection or \n"
 		    				+ "Not enough timeout set into Selenium+ preference.",
                             "Update timeout", JOptionPane.CLOSED_OPTION);

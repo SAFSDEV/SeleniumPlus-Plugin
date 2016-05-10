@@ -240,7 +240,7 @@ public class CommonLib {
 			+ BaseProject.JSTAF_EMBEDDDED_JAR + "\n\n" 
 			+ jmsg;			
 
-		JOptionPane.showConfirmDialog(null, msg,
+		TopMostOptionPane.showConfirmDialog(null, msg,
 				"Build path updated..", JOptionPane.CLOSED_OPTION);
 	}
 }
