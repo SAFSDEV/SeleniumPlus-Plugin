@@ -438,6 +438,13 @@
                 menubarPath="customplugin.editormethod.menu1/group1"
                 style="push">
 	         </action>
+	         <action
+                class="com.sas.seleniumplus.popupmenu.AddMethodAction"
+                id="customplugin.editormethod.insertTestingMethodAction"
+                label="Insert Regression Testing Method"
+                menubarPath="customplugin.editormethod.menu1/group1"
+                style="push">
+	         </action>
 	      </objectContribution>
 	   </extension>
   <extension

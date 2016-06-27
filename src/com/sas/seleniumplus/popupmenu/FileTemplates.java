@@ -183,6 +183,37 @@ public class FileTemplates {
 	}
 	
 	/**
+	 *  This template is used to generate testing method in Regression test case.
+	 */
+	public static String getRegressionTestingMethodSignature(){
+		return "\t/** \n" +
+			   "\t * Edit (or remove) the description of the testcase method here. \n" +
+			   "\t * Rename the testcase method as appropriate. \n" +
+			   "\t * Add parameters/arguments to the testcase method, if needed. \n" +
+			   "\t * But the default parameter 'counterPrefix' can NOT be deleted,\n" +
+			   "\t * which will be used to generate Regression summary report.\n" +
+			   "\t */\n" +
+	           "\tprivate static int testXXXAPI(String counterPrefix) throws Throwable{\n" +
+			   "\t\tString counterID = Regression.generateCounterID(counterPrefix, StringUtils.getMethodName(0, false));\n" +
+	           "\t\tint fail = 0;\n" +
+			   "\t\tCounters.StartCounter(counterID);\n" +
+	           "\n\t\t// Insert the contents of your testing method here:\n" +
+	           "\t\t// ...\n" +
+			   "\n\n\n" +
+			   "\t\tCounters.StopCounter(counterID);\n" +
+			   "\t\tCounters.StoreCounterInfo(counterID, counterID);\n" +
+			   "\t\tCounters.LogCounterInfo(counterID);\n" +
+			   "\n" +
+			   "\t\tif(fail > 0){\n" +
+			   "\t\t\tLogging.LogTestFailure(counterID + \" \" + fail + \" UNEXPECTED test failures!\");\n" +
+			   "\t\t }else{\n" +
+			   "\t\t\tLogging.LogTestSuccess(counterID + \" did not report any UNEXPECTED test failures!\");\n" +
+			   "\t\t}\n" +
+			   "\n\t\treturn fail;\n" + 
+			   "\t}\n\n";
+	}
+	
+	/**
 	 * We will initialize the INI file with this working template.
 	 */
 	public static InputStream testINI(String seleniumloc,String projectName) {

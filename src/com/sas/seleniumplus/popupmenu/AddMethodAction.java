@@ -19,6 +19,7 @@ import com.sas.seleniumplus.Activator;
 
 
 public class AddMethodAction implements IObjectActionDelegate {
+	private static final String insertTestMethodActionId = "customplugin.editormethod.insertTestingMethodAction";
 	
 	@SuppressWarnings("unused")
 	private Shell shell = null;
@@ -54,7 +55,12 @@ public class AddMethodAction implements IObjectActionDelegate {
 					if (selectionProvider != null) {
 						ISelection iSelection = selectionProvider.getSelection();
 						offset = ((ITextSelection) iSelection).getOffset();
-						doc.replace(offset, 0, FileTemplates.getMethodSignature());				
+						
+						if(action.getId().equals(insertTestMethodActionId)){
+							doc.replace(offset, 0, FileTemplates.getRegressionTestingMethodSignature());
+						}else{							
+							doc.replace(offset, 0, FileTemplates.getMethodSignature());				
+						}
 					}		
 	
 				}
