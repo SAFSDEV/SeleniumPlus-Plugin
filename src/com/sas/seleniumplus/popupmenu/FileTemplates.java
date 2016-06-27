@@ -187,9 +187,9 @@ public class FileTemplates {
 	 */
 	public static String getRegressionTestingMethodSignature(){
 		return "\t/** \n" +
-			   "\t * Edit (or remove) the description of the testcase method here. \n" +
-			   "\t * Rename the testcase method as appropriate. \n" +
-			   "\t * Add parameters/arguments to the testcase method, if needed. \n" +
+			   "\t * Edit (or remove) the description of the testing method here. \n" +
+			   "\t * Rename the testing method as appropriate. \n" +
+			   "\t * Add parameters/arguments to the testing method, if needed. \n" +
 			   "\t * But the default parameter 'counterPrefix' can NOT be deleted,\n" +
 			   "\t * which will be used to generate Regression summary report.\n" +
 			   "\t */\n" +
