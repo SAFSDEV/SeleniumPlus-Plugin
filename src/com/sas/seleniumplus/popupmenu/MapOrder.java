@@ -4,9 +4,9 @@ import java.io.InputStream;
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
-import org.eclipse.core.internal.resources.Folder;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IFolder;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IWorkspaceRoot;
@@ -40,21 +40,25 @@ public class MapOrder extends AbstractHandler{
 		
 		ISelection iSelection = Activator.getDefault().getWorkbench()
 				.getActiveWorkbenchWindow().getSelectionService().getSelection();
-				
-		Object firstElement = (IStructuredSelection) ((IStructuredSelection) iSelection).getFirstElement();
 		
-		IPath loc =  ((Folder) firstElement).getFullPath(); 
+		Object firstElement = ((IStructuredSelection) iSelection).getFirstElement();
+		
+		IPath loc =  ((IFolder) firstElement).getFullPath(); 
 		
 		IResource resource = root.findMember(loc);
-		
-		IContainer container = (IContainer) resource;		
 		
 		String projectName = null;
 		if(firstElement instanceof IAdaptable){
 			IProject project = (IProject)((IAdaptable)firstElement).getAdapter(IProject.class);
+			if(project==null) project = resource.getProject();
+			if(project==null){
+				Activator.error("MapOrder.execute(): could not deduce the project.");
+				return null;
+			}
 			projectName = project.getName();
 		}
 		
+		IContainer container = (IContainer) resource;		
 		final IFile file = container.getFile(new Path(BaseProject.APPMAP_ORDER_FILE));
 		try {
 			InputStream stream = FileTemplates.appMapOrder(projectName);
