@@ -18,14 +18,14 @@ public class FileTemplates {
 				     "# [WindowName]\n" +
 		             "# Child1=\"recognition string\"\n" +
 		             "# Child2=\"recognition string\"\n\n" +
-		             
+
 		             "# Refer to the SearchObject link below for info on recognition string formats:\n" +
 		             "# \n" +
 		             "# http://safsdev.sourceforge.net/doc/org/safs/selenium/webdriver/lib/SearchObject.html\n");
-		write.flush();			
+		write.flush();
 		return new ByteArrayInputStream(write.toString().getBytes());
-	}	
-	
+	}
+
 	/**
 	 * We will initialize file contents with a sample text.
 	 * @param projectName
@@ -33,10 +33,10 @@ public class FileTemplates {
 	public static InputStream appMapOrder(String projectName) {
 		String contents = projectName+"App.map\n"+
 	                      projectName+"App_en.map\n";
-			
+
 		return new ByteArrayInputStream(contents.getBytes());
-	}	
-	
+	}
+
 	/**
 	 * We will initialize a new TestCase class with this template.
 	 */
@@ -65,14 +65,14 @@ public class FileTemplates {
 				" */ \n" +
 				"public class " + filename + " extends SeleniumPlus {\n"  +
 				"\n\n" +
-				
+
 				"\t/* \n" +
 				"\t * Insert (generally) static testcase methods below. \n"  +
-				"\t * You call these from your TestRun runTest() method for normal testing, \n "+ 
+				"\t * You call these from your TestRun runTest() method for normal testing, \n "+
 				"\t * your TestCase runTest() method for Unit testing, \n"  +
 				"\t * or from other testcases, testcase classes, or anywhere they are needed. \n"  +
 				"\t */ \n\n\n\n"  +
-				
+
 				"\t/** \n" +
 				"\t * Normally not used for TestCase classes. \n" +
 				"\t * Can be used to implement a Unit test for this TestCase class, or as a test suite. \n" +
@@ -84,8 +84,8 @@ public class FileTemplates {
 				"\t */\n" +
 				"\t@Override\n" +
 				"\tpublic void runTest() throws Throwable {\n\n" +
-				"\t}\n" +				
-				
+				"\t}\n" +
+
 				"\t/** \n" +
 				"\t * Normally not used for TestCase classes. \n" +
 				"\t * This is the entry point for the automatic execution of this SeleniumPlus test \n" +
@@ -97,16 +97,16 @@ public class FileTemplates {
 				"\t * <p>\n" +
 				"\t * @see org.safs.selenium.webdriver.SeleniumPlus#main(java.lang.String[])\n"  +
 				"\t */\n" +
-				"\tpublic static void main(String[] args) { SeleniumPlus.main(args); }\n" +				
+				"\tpublic static void main(String[] args) { SeleniumPlus.main(args); }\n" +
 				"}\n";
 		return new ByteArrayInputStream(contents.getBytes());
-	}	
-	
+	}
+
 	/**
 	 * We will initialize a new TestRun class with this template.
 	 */
 	public static InputStream testRunClass(String projectName, String packageName, String mapPkgName, String filename) {
-		String contents = 
+		String contents =
 				"package " + packageName + ";\n\n" +
 				"import org.safs.selenium.webdriver.SeleniumPlus;\n" +
 				"import " + mapPkgName + ";\n\n" +
@@ -133,13 +133,13 @@ public class FileTemplates {
 				" */ \n" +
 				"public class " + filename + " extends SeleniumPlus {"  +
 				"\n\n" +
-				
+
 				"\t/* \n" +
 				"\t * Insert (generally) static testcase methods or setup/teardown methods below. \n"  +
-				"\t * You call these from your runTest() method for normal testing, \n "+ 
+				"\t * You call these from your runTest() method for normal testing, \n "+
 				"\t * or from other testcases, testcase classes, or anywhere they are needed. \n"  +
 				"\t */ \n\n\n\n"  +
-				
+
 				"\t/** \n" +
 				"\t * This is the entry point for the automatic execution of a SeleniumPlus test. \n" +
 				"\t * This will be called automatically and is not normally invoked by the developer. \n" +
@@ -151,8 +151,8 @@ public class FileTemplates {
 				"\t@Override\n" +
 				"\tpublic void runTest() throws Throwable {\n\n" +
 				"\n\n\n\n\n\n\n\n\n\n" +
-				"\t}\n\n\n" +				
-				
+				"\t}\n\n\n" +
+
 				"\t/** \n" +
 				"\t * This is the entry point for the automatic execution of this SeleniumPlus test \n" +
 				"\t * when executed from the command-line outside of the SeleniumPlus IDE. \n" +
@@ -163,11 +163,11 @@ public class FileTemplates {
 				"\t * <p>\n" +
 				"\t * @see org.safs.selenium.webdriver.SeleniumPlus#main(java.lang.String[])\n"  +
 				"\t */\n" +
-				"\tpublic static void main(String[] args) { SeleniumPlus.main(args); }\n" +				
+				"\tpublic static void main(String[] args) { SeleniumPlus.main(args); }\n" +
 				"}\n";
 		return new ByteArrayInputStream(contents.getBytes());
-	}	
-	
+	}
+
 	/**
 	 *  We will initialize a 'Test01' testcase method with this working template.
 	 */
@@ -181,7 +181,7 @@ public class FileTemplates {
 			   "\n\n" +
 			   "\t}\n\n";
 	}
-	
+
 	/**
 	 *  This template is used to generate testing method in Regression test case.
 	 */
@@ -209,26 +209,26 @@ public class FileTemplates {
 			   "\t\t }else{\n" +
 			   "\t\t\tLogging.LogTestSuccess(counterID + \" did not report any UNEXPECTED test failures!\");\n" +
 			   "\t\t}\n" +
-			   "\n\t\treturn fail;\n" + 
+			   "\n\t\treturn fail;\n" +
 			   "\t}\n\n";
 	}
-	
+
 	/**
 	 * We will initialize the INI file with this working template.
 	 */
 	public static InputStream testINI(String seleniumloc,String projectName) {
-		
+
 		String contents =	"\n[STAF]\n" +
   				            "# Comment out the line below (using ; or #) to turn OFF the Debug Log to improve performance slightly.\n" +
 				            "EmbedDebug=\"DebugLog.txt\"\n" +
 							"\n" +
-							
-				            "[SAFS_DRIVER]\n" + 
+
+				            "[SAFS_DRIVER]\n" +
 							"DriverRoot=\"%SELENIUM_PLUS%\\extra\\automation\"\n" +
 							"# Uncomment showMonitor below to use the SAFS Monitor during testing.\n" +
 							"# showMonitor=True\n" +
 							"\n" +
-							
+
 							"[SAFS_DIRECTORIES]\n" +
 							"DATADIR=Maps\n" +
 							"BENCHDIR=Benchmarks\n" +
@@ -236,29 +236,29 @@ public class FileTemplates {
 							"LOGDIR=Logs\n" +
 							"TESTDIR=Actuals\n" +
 							"\n" +
-							
+
 							"[SAFS_SELENIUM]\n" +
 							"# Grid or Remote Selenium Server\n" +
 							"#SELENIUMHOST=host.domain.com\n" +
 							"#SELENIUMPORT=4444\n" +
 							"\n" +
-							
+
 							"[SAFS_TEST]\n" +
-							"TestName=\""+ projectName + "\"\n" + 
+							"TestName=\""+ projectName + "\"\n" +
 							"TestLevel=\"Cycle\"\n" +
 							"CycleSeparator=\"\t\"\n" +
 							"# CycleLogName=\""+ projectName + "\"\n" +
 							"\n" +
-							
+
 							"# 3 logmodes all enabled below.\n" +
 							"# Delete those you will not use to improve performance.\n" +
 							"CycleLogMode=\"TEXTLOG CONSOLELOG XMLLOG\"\n" +
-							"\n" + 
-							
+							"\n" +
+
 							"# secsWaitForWindow=30\n" +
-							"# secsWaitForComponent=30\n";		
-			
+							"# secsWaitForComponent=30\n";
+
 		return new ByteArrayInputStream(contents.getBytes());
-	}	
-	
+	}
+
 }
