@@ -256,7 +256,13 @@ public class FileTemplates {
 							"\n" +
 
 							"# secsWaitForWindow=30\n" +
-							"# secsWaitForComponent=30\n";
+							"# secsWaitForComponent=30\n" +
+							"\n" +
+
+							"[SAFS_SELENIUM]\n" +
+							"# BROWSER defines the browser on which to run test.\n" +
+							"# BROWSER=explorer | firefox | chrome\n" +
+							"BROWSER=chrome\n";
 
 		return new ByteArrayInputStream(contents.getBytes());
 	}
