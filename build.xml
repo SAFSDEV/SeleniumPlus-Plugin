@@ -362,6 +362,7 @@ as the working directory.
 				<include name="samples/"/>
 				<!-- include name="bin/"/ -->
 			</fileset>
+			<fileset dir="${basedir}" includes="preferences.properties"/>
 		</copy>
 		<eclipse.versionReplacer path="${destination.temp.folder}/Seleniumplus_plugin_1.0.0.201312102336" version="1.0.0.201312102336"/>
 		<antcall target="apitools.generation">

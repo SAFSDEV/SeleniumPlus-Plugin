@@ -1,6 +1,7 @@
 package com.sas.seleniumplus;
 
 import java.io.File;
+import java.util.ResourceBundle;
 
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.net.proxy.IProxyService;
@@ -42,18 +43,31 @@ import com.sas.seleniumplus.projects.ProjectAddListener;
 public class Activator extends AbstractUIPlugin implements org.eclipse.ui.IStartup {
 
 	/** The plug-in ID "SeleniumPlus" */
-	public static final String PLUGIN_ID = "SeleniumPlus"; 
+	public static final String PLUGIN_ID = "SeleniumPlus";
 
 	/** Classpath Variable name "SELENIUMPLUS_HOME" */
-	public static final String SELENIUMPLUS_HOME = "SELENIUMPLUS_HOME"; 
+	public static final String SELENIUMPLUS_HOME = "SELENIUMPLUS_HOME";
 
 	// The shared instance
 	private static Activator plugin;
-	
+
+	public static final ResourceBundle preferences = ResourceBundle.getBundle("preferences");
+
 	/**
 	 * The constructor
 	 */
 	public Activator() {
+	}
+
+	//User needs to catch all the RuntimeExceptions himself
+	/**
+	 *
+	 * @param key String, the preference key in the resource bundle properties file
+	 * @return String, the preference default value
+	 */
+	public static String getPreference(String key){
+		String value = preferences.getString(key);
+		return value.trim();
 	}
 
 	/*
@@ -74,7 +88,7 @@ public class Activator extends AbstractUIPlugin implements org.eclipse.ui.IStart
 	@Override
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
-		plugin = this;		
+		plugin = this;
 	}
 
 	/**
@@ -97,13 +111,13 @@ public class Activator extends AbstractUIPlugin implements org.eclipse.ui.IStart
 		Path path = new Path(dir.getCanonicalPath());
 		JavaCore.setClasspathVariable(SELENIUMPLUS_HOME, path, null);
 		Activator.log("Activator.checkSeleniumPlusClasspath() set Classpath Variable SELENIUMPLUS_HOME to: "+ path.toPortableString());
-		Activator.log("Activator.checkSeleniumPlusClasspath() forcing Refresh on all Projects...");		
+		Activator.log("Activator.checkSeleniumPlusClasspath() forcing Refresh on all Projects...");
 		IProject[] projects = ResourcesPlugin.getWorkspace().getRoot().getProjects();
 		for (IProject iP : projects) {
 			if(iP.hasNature(ProjectNature.NATURE_ID)){
 				iP.refreshLocal(IResource.DEPTH_INFINITE, null);
 			}
-		}	        
+		}
 	}
 
 	/*
@@ -155,13 +169,13 @@ public class Activator extends AbstractUIPlugin implements org.eclipse.ui.IStart
 	public static void warn(String msg){
 		warn(msg, null);
 	}
-	
+
 	/**
 	 * Attempt to locate a Source root folder.<br>
 	 * Currently we seek a 'src' or 'Tests' folder root in the Project.
 	 * @param project IProject. If null, we will attempt to deduce the Project.
 	 * @return IFolder or null if not determined.
-	 * @throws ExecutionException 
+	 * @throws ExecutionException
 	 * @see Activator#getSelectedProject(ISelectionService)
 	 */
 	public static IFolder getRootSourceFolder(IProject project) throws ExecutionException{
@@ -184,7 +198,7 @@ public class Activator extends AbstractUIPlugin implements org.eclipse.ui.IStart
 	 * @param project IProject, If null, we will attempt to deduce the Project.
 	 * @param sourcefile String, the source file name relative to the Project-Source-Folder.
 	 * @return IFile or null if not determined.
-	 * @throws ExecutionException 
+	 * @throws ExecutionException
 	 * @see Activator#getSourceFile(IProject)
 	 */
 	public static IFile getSourceFile(IProject project, String sourcefile) throws ExecutionException{
@@ -210,11 +224,11 @@ public class Activator extends AbstractUIPlugin implements org.eclipse.ui.IStart
 	public static boolean activateView(String viewName){
 		try{
 			if(viewName==null || viewName.trim().isEmpty()) return false;
-			
+
 			IWorkbench wb = PlatformUI.getWorkbench();
 			IWorkbenchWindow win = wb.getActiveWorkbenchWindow();
 			IWorkbenchPage page = win.getActivePage();
-			
+
 			IViewReference[] views = page.getViewReferences();
 			for(IViewReference view:views){
 				log("Name="+view.getPartName()+" title="+view.getTitle()+" description="+view.getContentDescription());
@@ -227,7 +241,7 @@ public class Activator extends AbstractUIPlugin implements org.eclipse.ui.IStart
 		}catch(Exception e){
 			error(StringUtils.debugmsg(false)+" failed.", e);
 		}
-		
+
 		return false;
 	}
 
@@ -235,7 +249,7 @@ public class Activator extends AbstractUIPlugin implements org.eclipse.ui.IStart
 	 * Attempt to locate a Source file of current active project.<br>
 	 * @param sourcefile String, the source file name relative to the Project-Source-Folder.
 	 * @return IFile or null if not determined.
-	 * @throws ExecutionException 
+	 * @throws ExecutionException
 	 * @see Activator#getSourceFile(IProject)
 	 */
 	public static IFile getActiveProjectSourceFile(String sourcefile){
@@ -247,10 +261,10 @@ public class Activator extends AbstractUIPlugin implements org.eclipse.ui.IStart
 			if(!activateProjectExplorer()){
 				warn("The project explorer has not been activated successfully! You may not get the active project.");
 			}
-			
+
 			try{
 				file = getSourceFile(getActiveProject(), sourcefile);
-			}catch(Exception e){ 
+			}catch(Exception e){
 				warn(debugmsg+StringUtils.debugmsg(e));
 			}
 
@@ -279,12 +293,12 @@ public class Activator extends AbstractUIPlugin implements org.eclipse.ui.IStart
 				warn(debugmsg+" WE CANNOT FIND THE SOURCE FILE '"+sourcefile+"'!");
 			}
 		}
-		
+
 		return file;
 	}
-	
+
 	/**
-	 * Attempt to return the full package name of the currently selected Resource. 
+	 * Attempt to return the full package name of the currently selected Resource.
 	 * @param resource if null, we will attempt to deduce the currently selected IResource.
 	 * @return String package name ("sample.testcases", "sample.testruns", etc..), or null if not deduced.
 	 * @throws ExecutionException
@@ -302,7 +316,7 @@ public class Activator extends AbstractUIPlugin implements org.eclipse.ui.IStart
 			return null;
 		}
 
-		String srcDir = srcfolder.getFullPath().toPortableString();		
+		String srcDir = srcfolder.getFullPath().toPortableString();
 		String resourcePath = resource.getFullPath().toPortableString();
 
 		String packageName = null;
@@ -311,23 +325,23 @@ public class Activator extends AbstractUIPlugin implements org.eclipse.ui.IStart
 			packageName = newpackage[1].replace("/", ".");
 			if(packageName.startsWith(".")) packageName = packageName.substring(1);
 		}catch(Exception x){
-			Activator.log("Activator.getSelectedSourcePackage "+x.getClass().getName()+", "+ x.getMessage());			
+			Activator.log("Activator.getSelectedSourcePackage "+x.getClass().getName()+", "+ x.getMessage());
 		}
     	return packageName;
     }
-    
+
 	/**
 	 * selectionService available to your calling routine, or null if we should try to deduce it.
 	 * @param selectionService
 	 * @return IProject or null if not determined.
 	 * @throws ExecutionException
 	 */
-	public static IProject getSelectedProject(ISelectionService selectionService) throws ExecutionException{		
+	public static IProject getSelectedProject(ISelectionService selectionService) throws ExecutionException{
 		IResource resource = getSelectedResource(selectionService);
 		if(resource == null){
 			Activator.log("Activator.getSelectedProject: The current selected Resource is null.");
 			return null;
-		}			
+		}
 		IProject project = resource.getProject();
 		if(project == null) {
 			Activator.log("Activator.getSelectedProject: The Project is null.");
@@ -394,7 +408,7 @@ public class Activator extends AbstractUIPlugin implements org.eclipse.ui.IStart
 		IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject("");
 		return project;
 	}
-	
+
 	/**
 	 * Get the absolute path to the Project location.
 	 * @param iproject
