@@ -1,49 +1,40 @@
 package com.sas.seleniumplus.preferences;
 
-import org.eclipse.jface.preference.FieldEditorPreferencePage;
-import org.eclipse.jface.preference.StringFieldEditor;
+import java.util.LinkedHashMap;
+
+import org.eclipse.jface.preference.IntegerFieldEditor;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
+
 import com.sas.seleniumplus.Activator;
 
-public class RemoteServer extends FieldEditorPreferencePage 
-						implements IWorkbenchPreferencePage {
-	
-	StringFieldEditor str_editor_servertimeout;
-	StringFieldEditor str_editor_browsertimeout;
-		
-	
+public class RemoteServer extends FieldEditorPreferencePageDefault
+						  implements IWorkbenchPreferencePage {
+
+	private static final String[] integerFieldEditorNames = {
+		PreferenceConstants.SERVER_TIMEOUT,
+		PreferenceConstants.BROWSER_TIMEOUT
+	};
+
 	public RemoteServer(){
-		super(GRID);		
+		super(GRID);
 	}
 
 	@Override
 	public void init(IWorkbench workbench) {
 		setPreferenceStore(Activator.getDefault().getPreferenceStore());
-	    setDescription("Selenium Remote Server configuration:"); 	
-		
+	    setDescription(Activator.getPreference("remote.server.preference.page.desc"));
 	}
 
 	@Override
-	protected void createFieldEditors() {
-			    
-		
-		str_editor_servertimeout = new StringFieldEditor(PreferenceConstants.SERVER_TIMEOUT,
-		        "&Server timeout (seconds):",10, getFieldEditorParent());
-	
-		addField(str_editor_servertimeout);
-				
-		str_editor_browsertimeout = new StringFieldEditor(PreferenceConstants.BROWSER_TIMEOUT, 
-				"Browser timeout (seconds):",10,getFieldEditorParent());
-		
-		addField(str_editor_browsertimeout);	
-		
+	protected LinkedHashMap<String/*editorName*/, Class<?>/*editor's class*/> getFieldEditorsToAdd(){
+		LinkedHashMap<String, Class<?>> fieldEditorsToAdd =  new LinkedHashMap<String, Class<?>>();
+
+		//Add IntegerFieldEditors
+		for(String integerFieldEditorName:integerFieldEditorNames){
+			fieldEditorsToAdd.put(integerFieldEditorName, IntegerFieldEditor.class);
+		}
+
+		return fieldEditorsToAdd;
 	}
-	
-	protected void performDefaults() {
-		str_editor_servertimeout.loadDefault();
-		str_editor_browsertimeout.loadDefault();
-		super.performDefaults();		
-		
-	} 
 }
