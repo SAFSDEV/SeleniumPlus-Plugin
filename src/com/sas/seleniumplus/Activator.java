@@ -1,6 +1,12 @@
 package com.sas.seleniumplus;
-
+/**
+ * Developer logs:
+ * APR 20, 2017	(sbjlwa)	Load custom-resource-bundle before trying the default one.
+ */
 import java.io.File;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.eclipse.core.commands.ExecutionException;
@@ -34,6 +40,7 @@ import org.safs.StringUtils;
 import org.safs.tools.CaseInsensitiveFile;
 
 import com.sas.seleniumplus.natures.ProjectNature;
+import com.sas.seleniumplus.preferences.PreferenceConstants;
 import com.sas.seleniumplus.projects.BaseProject;
 import com.sas.seleniumplus.projects.ProjectAddListener;
 
@@ -45,29 +52,21 @@ public class Activator extends AbstractUIPlugin implements org.eclipse.ui.IStart
 	/** The plug-in ID "SeleniumPlus" */
 	public static final String PLUGIN_ID = "SeleniumPlus";
 
-	/** Classpath Variable name "SELENIUMPLUS_HOME" */
+	/** Classpath Variable name "SELENIUMPLUS_HOME", this variable is defined for Eclipse */
 	public static final String SELENIUMPLUS_HOME = "SELENIUMPLUS_HOME";
 
 	// The shared instance
 	private static Activator plugin;
 
-	public static final ResourceBundle preferences = ResourceBundle.getBundle("preferences");
+	private static ResourceBundle preferences = null;
+
+	public static final String seleniumhome = System.getenv(BaseProject.SELENIUM_PLUS_ENV);
 
 	/**
 	 * The constructor
 	 */
 	public Activator() {
-	}
-
-	//User needs to catch all the RuntimeExceptions himself
-	/**
-	 *
-	 * @param key String, the preference key in the resource bundle properties file
-	 * @return String, the preference default value
-	 */
-	public static String getPreference(String key){
-		String value = preferences.getString(key);
-		return value.trim();
+		if(seleniumhome == null) throw new IllegalStateException("SELENIUM_PLUS System Environment '"+BaseProject.SELENIUM_PLUS_ENV+"' was not set!");
 	}
 
 	/*
@@ -89,6 +88,7 @@ public class Activator extends AbstractUIPlugin implements org.eclipse.ui.IStart
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
 		plugin = this;
+		initResourceBundle();
 	}
 
 	/**
@@ -99,14 +99,13 @@ public class Activator extends AbstractUIPlugin implements org.eclipse.ui.IStart
 	private void checkSeleniumPlusClasspath() throws Exception{
 		File dir = null;
 		IPath home = JavaCore.getClasspathVariable(SELENIUMPLUS_HOME);
-		String seleniumdir = System.getenv(BaseProject.SELENIUM_PLUS_ENV);
 		if(home != null){
 			dir = home.toFile();
 			if(dir.isDirectory()) return;
 		}
 		Activator.log("Activator.checkSeleniumPlusClasspath() attempting to fix Classpath Variable SELENIUMPLUS_HOME.");
-		if(seleniumdir == null) throw new IllegalStateException("SELENIUM_PLUS Environment does NOT seem to be installed on the system!");
-		dir = new CaseInsensitiveFile(seleniumdir).toFile();
+		if(seleniumhome == null) throw new IllegalStateException("SELENIUM_PLUS Environment does NOT seem to be installed on the system!");
+		dir = new CaseInsensitiveFile(seleniumhome).toFile();
 		if(! dir.isDirectory()) throw new IllegalStateException("SELENIUM_PLUS Environment does NOT point to a valid directory!");
 		Path path = new Path(dir.getCanonicalPath());
 		JavaCore.setClasspathVariable(SELENIUMPLUS_HOME, path, null);
@@ -132,6 +131,63 @@ public class Activator extends AbstractUIPlugin implements org.eclipse.ui.IStart
 	}
 
 	/**
+	 * This method will initialize the 'resource bundle'.<br/>
+	 * It is strongly suggested to call it after method {@link #start(BundleContext)}<br/>
+	 */
+	public final static void initResourceBundle(){
+		//We should firstly try to load the resource bundle from the %SELENIUM_PLUS%\eclipse\configuration\com.sas.seleniumplus\preferences.properties
+		File configFolder = new File(seleniumhome+PreferenceConstants.RESOURCE_BUNDLE_CUSTOM_FOLDER);
+		ResourceBundle.Control control = ResourceBundle.Control.getControl(ResourceBundle.Control.FORMAT_DEFAULT);
+//		ResourceBundle.Control control = new ResourceBundle.Control(){
+//			public long getTimeToLive(String baseName, Locale locale){
+//				return 0;
+//			}
+//			public boolean needsReload(String baseName,
+//                    Locale locale,
+//                    String format,
+//                    ClassLoader loader,
+//                    ResourceBundle bundle,
+//                    long loadTime){
+//				return true;
+//			}
+//		};
+		try {
+			if(configFolder.exists()){
+				URL[] urls = new URL[1];
+				urls[0] = configFolder.toURI().toURL();
+				ClassLoader loader = new URLClassLoader(urls);
+				preferences = ResourceBundle.getBundle(PreferenceConstants.RESOURCE_BUNDLE_PREFERENCES, Locale.getDefault(), loader, control );
+				Activator.log("Loaded custom resource bundle '"+PreferenceConstants.RESOURCE_BUNDLE_PREFERENCES+"' from '"+configFolder.getAbsolutePath()+"'");
+			}
+		} catch (Exception ex){
+			Activator.warn("Failed to load resource bundle '"+PreferenceConstants.RESOURCE_BUNDLE_PREFERENCES+"' from "+configFolder.getAbsolutePath()+", due to "+ex.toString());
+		}
+		//If we cannot load the custom resource bundle, then try to load the default resource bundle
+		if(preferences==null){
+			try{
+				preferences = ResourceBundle.getBundle(PreferenceConstants.RESOURCE_BUNDLE_PREFERENCES, control);
+				Activator.log("Loaded default resource bundle '"+PreferenceConstants.RESOURCE_BUNDLE_PREFERENCES+"'");
+			}catch(Exception e){
+				Activator.error("Failed to load resource bundle '"+PreferenceConstants.RESOURCE_BUNDLE_PREFERENCES+"', due to "+e.toString());
+			}
+		}
+		if(preferences==null){
+			throw new IllegalStateException("Failed to load resource bundle '"+PreferenceConstants.RESOURCE_BUNDLE_PREFERENCES+"'!");
+		}
+	}
+
+	/**
+	 *
+	 * @param key String, the preference key in the resource bundle properties file
+	 * @return String, the preference default value
+	 */
+	//User needs to catch all the RuntimeExceptions himself
+	public static String getPreference(String key){
+		String value = preferences.getString(key);
+		return value.trim();
+	}
+
+	/**
 	 * Returns the shared instance
 	 *
 	 * @return the shared instance
@@ -147,13 +203,25 @@ public class Activator extends AbstractUIPlugin implements org.eclipse.ui.IStart
 	 * @param e
 	 */
 	public static void log(String msg, Exception e){
-		getDefault().getLog().log(new Status(Status.INFO, PLUGIN_ID, Status.INFO, msg, e));
+		try{
+			getDefault().getLog().log(new Status(Status.INFO, PLUGIN_ID, Status.INFO, msg, e));
+		}catch(Exception ex){
+			System.out.println(PLUGIN_ID+":INFO: "+msg+", "+e);
+		}
 	}
 	public static void error(String msg, Exception e){
-		getDefault().getLog().log(new Status(Status.ERROR, PLUGIN_ID, Status.INFO, msg, e));
+		try{
+			getDefault().getLog().log(new Status(Status.ERROR, PLUGIN_ID, Status.INFO, msg, e));
+		}catch(Exception ex){
+			System.err.println(PLUGIN_ID+":ERROR: "+msg+", "+e);
+		}
 	}
 	public static void warn(String msg, Exception e){
-		getDefault().getLog().log(new Status(Status.WARNING, PLUGIN_ID, Status.INFO, msg, e));
+		try{
+			getDefault().getLog().log(new Status(Status.WARNING, PLUGIN_ID, Status.INFO, msg, e));
+		}catch(Exception ex){
+			System.out.println(PLUGIN_ID+":WARN: "+msg+", "+e);
+		}
 	}
 	/**
 	 * Simply calls log(msg, null)

@@ -1,10 +1,19 @@
 package com.sas.seleniumplus.preferences;
 
+import java.io.File;
+
 /**
  * Constant definitions for plug-in preferences
  * The default values are put into preferences.properties resource bundle file.
  */
 public class PreferenceConstants {
+
+	/** 'preferences' the resource bundle name for preference */
+	public static final String RESOURCE_BUNDLE_PREFERENCES 			= "preferences";
+	/** '<b>eclipse\configuration\com.sas.seleniumplus\preferences.properties</b>' under %SELENIUM_PLUS%.<br/>
+	 * It is used to hold the custom resource bundles  */
+	public static final String RESOURCE_BUNDLE_CUSTOM_FOLDER		= File.separator+"eclipse"+File.separator+"configuration"+File.separator+"com.sas.seleniumplus";
+
 	//The name of StringFieldEditors and they also served as key prefix in perferences.properties
 	public static final String UPDATESITE_LIB_URL 			= "UpdatesiteLibUrl";
 	public static final String UPDATESITE_PLUGIN_URL 		= "UpdatesitePluginUrl";

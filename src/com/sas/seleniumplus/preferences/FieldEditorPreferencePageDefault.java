@@ -8,6 +8,7 @@
  *
  * History:
  * 2017年4月19日    (SBJLWA) Initial release.
+ * 2017年4月20日    (SBJLWA) Dynamically load properties from resource bundle at run-time.
  */
 package com.sas.seleniumplus.preferences;
 
@@ -33,13 +34,17 @@ import com.sas.seleniumplus.Activator;
  */
 public class FieldEditorPreferencePageDefault extends FieldEditorPreferencePage{
 
-	/** a list of IntegerFieldEditor*/
+	/** a list of IntegerFieldEditors contained in this Page */
 	protected List<FieldEditor> intFieldEditors = null;
-	/** a list of BooleanFieldEditor*/
+	/** a list of BooleanFieldEditors contained in this Page */
 	protected List<FieldEditor> booleanFieldEditors = null;
-	/** a list of StringFieldEditor*/
+	/** a list of StringFieldEditors contained in this Page */
 	protected List<FieldEditor> stringFieldEditors = null;
 
+	/**
+	 * A map holding pairs of (Class, List&lt;FieldEditor&gt;). It simplifies the code of method {@link #addField(FieldEditor)}.
+	 * @see #addField(FieldEditor)
+	 */
 	protected Map<Class<?>, List<FieldEditor>> clazzToFieldEditorList = null;
 
 	public FieldEditorPreferencePageDefault(){
@@ -66,8 +71,9 @@ public class FieldEditorPreferencePageDefault extends FieldEditorPreferencePage{
 	}
 
 	/**
-	 *
+	 * This is the method to be overridden when adding fields for a certain FieldEditorPreferencePage.
 	 * @return Map of editors to add, they <b>MUST</b> be put <b>IN ORDER</b>.
+	 * @see #createFieldEditors()
 	 */
 	protected LinkedHashMap<String/*editorName*/, Class<?>/*FieldEditor's class*/> getFieldEditorsToAdd(){
 		return new LinkedHashMap<String, Class<?>>();
@@ -104,11 +110,20 @@ public class FieldEditorPreferencePageDefault extends FieldEditorPreferencePage{
 	}
 
 	protected void addField(FieldEditor editor) {
+		//Add FieldEditor to cache
 		for(Class<?> clazz:clazzToFieldEditorList.keySet()){
 			if(clazz.isInstance(editor)){
 				clazzToFieldEditorList.get(clazz).add(editor);
+				break;
 			}
 		}
 		super.addField(editor);
+	}
+
+	protected void performDefaults() {
+		//Load the default from external resource bundle
+		Activator.initResourceBundle();
+		PreferenceInitializer.loadDefaultFromResourceBundle();
+		super.performDefaults();
 	}
 }
