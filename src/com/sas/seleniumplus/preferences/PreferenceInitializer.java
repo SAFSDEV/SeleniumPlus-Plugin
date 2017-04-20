@@ -12,6 +12,13 @@ import com.sas.seleniumplus.Activator;
 public class PreferenceInitializer extends AbstractPreferenceInitializer {
 
 	public void initializeDefaultPreferences() {
+		loadDefaultFromResourceBundle();
+	}
+
+	/**
+	 * Load default values from 'resource bundle'. It <b>MUST</b> be called after the creation of 'resource bundle', see {@link Activator#initResourceBundle()}.
+	 */
+	public static void loadDefaultFromResourceBundle(){
 		IPreferenceStore store = Activator.getDefault().getPreferenceStore();
 		String key = null;
 

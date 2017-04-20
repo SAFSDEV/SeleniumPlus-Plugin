@@ -5,7 +5,6 @@ import java.io.FilenameFilter;
 import java.io.InputStream;
 import java.net.URI;
 
-import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.ICommand;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -15,7 +14,6 @@ import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.jdt.core.IAccessRule;
@@ -37,8 +35,8 @@ public class BaseProject {
 	public static String SELENIUM_PLUS;
 	/** holds path to STAF install directory -- once validated. */
 	public static String STAFDIR;
-	
-	/** "SELENIUM_PLUS" */
+
+	/** "SELENIUM_PLUS" the system environment variable name holding the path where SeleniumPlus has been installed */
 	public static String SELENIUM_PLUS_ENV = "SELENIUM_PLUS";
 	/** "STAFDIR" */
 	public static String STAFDIR_ENV = "STAFDIR";
@@ -46,12 +44,12 @@ public class BaseProject {
 	public static String STAFPROC_PATH = File.separatorChar+"bin"+ File.separatorChar +"STAFProc";
 	/** "SAFSDIR" */
 	public static String SAFSDIR_ENV = "SAFSDIR";
-	
+
 	/** "Tests" */
 	public static String SRC_TEST_DIR = "Tests";
 	/** "src" */
 	public static String SRC_SRC_DIR = "src";
-	
+
 	/** "testcases" */
 	public static String SRC_TESTCASES_SUBDIR = "testcases";
 	/** "testruns" */
@@ -64,11 +62,11 @@ public class BaseProject {
 	/** build path jars */
 	public final static String SELENIUMPLUS_JAR = "seleniumplus.jar";
 	public final static String JSTAF_EMBEDDDED_JAR = "JSTAFEmbedded.jar";
-	public final static String SAFSSELENIUM_JAR = "safsselenium.jar"; 
+	public final static String SAFSSELENIUM_JAR = "safsselenium.jar";
 	public final static String STAF_JAR = "JSTAF.jar";
 	public final static String SELENIUM_SERVER_JAR_PART_NAME = "selenium-server-standalone";
-	
-	
+
+
 	/** "TestCase1" */
 	public static String TESTCASECLASS_FILE = "TestCase1";
 	/** "/samples/TestCase1.java" */
@@ -82,13 +80,13 @@ public class BaseProject {
 	public static String SELENIUMPLUS_JAR_PATH = File.separator + "libs"+ File.separator + SELENIUMPLUS_JAR;
 	/** "/lib/safsselenium.jar" */
 	public static String SAFSSELENIUM_JAR_PATH = File.separator + "lib"+ File.separator + SAFSSELENIUM_JAR;
-	
+
 	/** "/bin/JSTAF.jar" */
 	public static String STAF_JAR_PATH = File.separator + "bin"+ File.separator + STAF_JAR;
-	
+
 	/** "/libs/JSTAFEmbedded.jar" */
 	public static String NOSTAF_JAR_PATH = File.separator + "libs"+ File.separator + JSTAF_EMBEDDDED_JAR;
-	
+
 	public static String srcDir;
 	public static String testcaseDir;
 	public static String testrunDir;
@@ -103,7 +101,7 @@ public class BaseProject {
 	public static String TEST_DIR = "Actuals";
 	/** "Logs" */
 	public static String LOGS_DIR = "Logs";
-	
+
 	/** "SeleniumProject" */
 	public static String PROJECTTYPE_SELENIUM = "SeleniumProject";
 	/** "AdvanceProject" */
@@ -113,7 +111,7 @@ public class BaseProject {
 
 	/** "SAMPLE" */
 	public static String PROJECTNAME_SAMPLE   = "SAMPLE";
-	
+
 	/** Map */
 	public static String MAPCLASS_FILE = "Map";
 	/** test.ini */
@@ -138,15 +136,15 @@ public class BaseProject {
 	public static String APPMAP_ORDER_FILE = "AppMap.order";
 	/** /samples/AppMap.order */
 	public static String APPMAP_ORDER_RESOURCE = "/samples/AppMap.order";
-	
+
 	public static String MSG_INSTALL_NOT_FOUND = "SeleniumPlus installation not found";
-	public static String MSG_INSTALL_AND_RESTART = " 1. Please install SeleniumPlus.\n" + 
+	public static String MSG_INSTALL_AND_RESTART = " 1. Please install SeleniumPlus.\n" +
                                                    " 2. Re-run Setup.bat from the SeleniumPlus install directory.\n"+
-                                                   " 3. Restart SeleniumPlus.\n";		
+                                                   " 3. Restart SeleniumPlus.\n";
 	/**
 	 * For this marvelous project we need to: - create the default Eclipse
 	 * project - add the custom project nature - create the folder structure
-	 * 
+	 *
 	 * @param projectName
 	 * @param location
 	 * @param companyName
@@ -158,42 +156,42 @@ public class BaseProject {
 		Assert.isNotNull(companyName);
 		Assert.isTrue(projectName.trim().length() > 0);
 
-		if (projectType.equalsIgnoreCase(PROJECTTYPE_SELENIUM) || 
+		if (projectType.equalsIgnoreCase(PROJECTTYPE_SELENIUM) ||
 			projectType.equalsIgnoreCase(PROJECTTYPE_SAMPLE)){
-			
+
 			srcDir = SRC_TEST_DIR;
 			testcaseDir = srcDir + "/"+ projectName.toLowerCase() +"/"+ SRC_TESTCASES_SUBDIR;
 			testrunDir =  srcDir + "/"+ projectName.toLowerCase() +"/"+ SRC_TESTRUNS_SUBDIR;
 
 		} else if (projectType.equalsIgnoreCase(PROJECTTYPE_ADVANCE)){
-			
+
 			srcDir = SRC_SRC_DIR;
 			testcaseDir = srcDir + "/com/" + companyName.toLowerCase() + "/"+ projectName.toLowerCase()+ "/"+ SRC_TESTS_SUBDIR;
 			testrunDir = srcDir + "/com/" + companyName.toLowerCase() + "/"+ projectName.toLowerCase()+ "/"+ SRC_SUITES_SUBDIR;
-					
+
 		} else {
 			// internal error
 		}
-				
+
 		IProject project = createBaseProject(projectName,srcDir,location);
-				
+
 		try {
-			
+
 			addNature(project);
 
 			String[] paths = {
 					srcDir,
 					testcaseDir,
-					testrunDir,					
+					testrunDir,
 					DATAPOOL_DIR,
-					TEST_DIR, 
-					BENCH_DIR, 
-					DIF_DIR, 
+					TEST_DIR,
+					BENCH_DIR,
+					DIF_DIR,
 					LOGS_DIR
 			};
-			
+
 			addToProjectStructure(project, paths);
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
 			project = null;
@@ -204,7 +202,7 @@ public class BaseProject {
 
 	/**
 	 * Just do the basics: create a basic project.
-	 * 
+	 *
 	 * @param projectName
 	 * @param sourceDirName
 	 * @param location
@@ -219,7 +217,7 @@ public class BaseProject {
 			IProjectDescription desc = newProject.getWorkspace()
 					.newProjectDescription(newProject.getName());
 			desc.setNatureIds(new String[] { JavaCore.NATURE_ID,
-					"org.eclipse.wst.common.project.facet.core.nature" });			
+					"org.eclipse.wst.common.project.facet.core.nature" });
 			org.eclipse.core.resources.ICommand[] commands = new ICommand[] {
 					desc.newCommand(), desc.newCommand() };
 			commands[0].setBuilderName(AppMapBuilder.BUILDER_ID);
@@ -239,7 +237,7 @@ public class BaseProject {
 					newProject.open(null);
 				}
 				IFolder srcFolder = newProject.getFolder(sourceDirName);
-			
+
 				IJavaProject javaProject = JavaCore.create(newProject);
 				org.eclipse.jdt.core.IClasspathEntry src = JavaCore
 						.newSourceEntry(srcFolder.getFullPath());
@@ -255,11 +253,11 @@ public class BaseProject {
 					IClasspathEntry seleniumServerjar = JavaCore.newVariableEntry(new Path(Activator.SELENIUMPLUS_HOME + "/libs/" + findLatestJar().getName()), null, null);
 					IClasspathEntry stafjar = null;
 					IClasspathEntry nostafjar = null;
-					
+
 					try{ stafjar = JavaCore.newLibraryEntry(
 							new Path(STAFDIR + STAF_JAR_PATH), null, null);}
 					catch(Exception x){}
-					
+
 					try{ nostafjar = JavaCore.newVariableEntry(
 							new Path(Activator.SELENIUMPLUS_HOME + NOSTAF_JAR_PATH), null, null);}
 					catch(Exception x){}
@@ -289,14 +287,14 @@ public class BaseProject {
 			createFolder((IFolder) parent);
 		}
 		if (!folder.exists()) {
-			folder.create(false, true, null);			
+			folder.create(false, true, null);
 		}
 	}
 
 	/**
 	 * Create a folder structure with a parent root, overlay, and a few child
 	 * folders.
-	 * 
+	 *
 	 * @param newProject
 	 * @param paths
 	 * @throws CoreException
@@ -307,9 +305,9 @@ public class BaseProject {
 		for (String path : paths) {
 			IFolder etcFolders = newProject.getFolder(path);
 			createFolder(etcFolders);
-		}		
-			
-		
+		}
+
+
 		/**
 		 * Create sample test class
 		*/
@@ -322,23 +320,23 @@ public class BaseProject {
 		String newPackage = packagedir.replaceAll("/", ".");
 		String mapPackage = prjPackage.replaceAll("/",  ".");
 		String mapPkg = mapPackage + "."+ MAPCLASS_FILE;
-		
+
 		ClassLoader loader = Thread.currentThread().getContextClassLoader();
-				
-		if (testPkg.exists()){			
+
+		if (testPkg.exists()){
 			IFile testclass = testPkg.getFile(testClass + ".java");
 			InputStream testclassstream = null;
-			if (newProject.getName().equalsIgnoreCase(PROJECTNAME_SAMPLE)){				
+			if (newProject.getName().equalsIgnoreCase(PROJECTNAME_SAMPLE)){
 				testclassstream = loader.getResourceAsStream(TESTCASECLASS_RESOURCE);
 			} else {
-				testclassstream = FileTemplates.testClass(newProject.getName(),newPackage,mapPkg, testClass);				
+				testclassstream = FileTemplates.testClass(newProject.getName(),newPackage,mapPkg, testClass);
 			}
-			
+
 			testclass.create(testclassstream, true, null);
-			testclassstream.close();			
-		}		
-		
-		
+			testclassstream.close();
+		}
+
+
 		/**
 		 * Create run tests
 		 */
@@ -351,95 +349,95 @@ public class BaseProject {
 		newPackage = packagedir.replaceAll("/", ".");
 		mapPackage = prjPackage.replaceAll("/",  ".");
 		mapPkg = mapPackage + "."+ MAPCLASS_FILE;
-		
-		
-		if (testPkg.exists()){			
+
+
+		if (testPkg.exists()){
 			IFile testruns = testPkg.getFile(testRunClass + ".java");
 			InputStream testrunstream = null;
-			if (newProject.getName().equalsIgnoreCase(PROJECTNAME_SAMPLE)){				
+			if (newProject.getName().equalsIgnoreCase(PROJECTNAME_SAMPLE)){
 				testrunstream =loader.getResourceAsStream(TESTRUNCLASS_RESOURCE);
 			} else {
 				testrunstream = FileTemplates.testRunClass(newProject.getName(),newPackage,mapPkg, testRunClass);
 			}
-						
+
 			testruns.create(testrunstream, true, null);
 			testrunstream.close();
-		}		
-		
-		
-		
+		}
+
+
+
 		/**
 		 * Map and Map order files
 		 */
 		IFolder mapFolder = newProject.getFolder(DATAPOOL_DIR);
-		
+
 		if (mapFolder.exists()) {
-			
-			if (newProject.getName().equalsIgnoreCase(PROJECTNAME_SAMPLE)){	
-				
+
+			if (newProject.getName().equalsIgnoreCase(PROJECTNAME_SAMPLE)){
+
 				IFile appMap = mapFolder.getFile(newProject.getName()+APPMAP_FILE);
 				//InputStream mapstream = BaseProject.class.getResourceAsStream("../../../../samples/App.map");
 				InputStream mapstream = loader.getResourceAsStream(APPMAP_RESOURCE);
 				appMap.create(mapstream, true, null);
 				if (mapstream != null) mapstream.close();
-				
+
 				appMap = mapFolder.getFile(newProject.getName()+APPMAP_EN_FILE);
 				//mapstream = BaseProject.class.getResourceAsStream("../../../../samples/App_zh.map");
 				mapstream = loader.getResourceAsStream(APPMAP_EN_RESOURCE);
 				appMap.create(mapstream, true, null);
 				if (mapstream != null) mapstream.close();
-	
+
 				appMap = mapFolder.getFile(APPMAP_ORDER_FILE);
 				//mapstream = BaseProject.class.getResourceAsStream("../../../../samples/AppMap.order");
 				mapstream = loader.getResourceAsStream(APPMAP_ORDER_RESOURCE);
 				appMap.create(mapstream, true, null);
-				if (mapstream != null) mapstream.close();			
-				
+				if (mapstream != null) mapstream.close();
+
 			} else {
-			
+
 				IFile appMap = mapFolder.getFile(newProject.getName()+APPMAP_FILE);
 				InputStream mapstream = FileTemplates.appMap();
 				appMap.create(mapstream, true, null);
 				mapstream.close();
-	
+
 				appMap = mapFolder.getFile(newProject.getName()+APPMAP_EN_FILE);
 				mapstream = FileTemplates.appMap();
 				appMap.create(mapstream, true, null);
 				mapstream.close();
-	
+
 				appMap = mapFolder.getFile(APPMAP_ORDER_FILE);
 				mapstream = FileTemplates.appMapOrder(newProject.getName());
 				appMap.create(mapstream, true, null);
-				mapstream.close();			
+				mapstream.close();
 			}
 		}
-		
+
 		/**
 		 * create test.ini file
 		 */
 		IContainer container = mapFolder.getParent();
-		IFile iniFile = container.getFile(new Path(TESTINI_FILE));		
+		IFile iniFile = container.getFile(new Path(TESTINI_FILE));
 		InputStream inistream = FileTemplates.testINI(SELENIUM_PLUS,newProject.getName());
 		iniFile.create(inistream, true, null);
 		inistream.close();
-		
+
 		/**
 		 * create commandline bat file
 		 */
 		// TODO WIN and NIX versions of scripts
-		boolean isWin = true; 
+		boolean isWin = true;
 		IFile batfile =  null;
 		InputStream batstream = null;
-		
+
 		if(isWin){
 			batfile = container.getFile(new Path(RUNAUTOMATION_WIN_FILE));
 			batstream = loader.getResourceAsStream(RUNAUTOMATION_WIN_RESOURCE);
 		}
 		if (batstream != null) {
 			batfile.create(batstream, true, null);
-			batstream.close();	
+			batstream.close();
 		}
-		
+
 	}
 
 	private static void addNature(IProject project) throws CoreException {
@@ -453,18 +451,18 @@ public class BaseProject {
 			project.setDescription(description, null);
 		}
 	}
-	
+
 	private static File findLatestJar(){
-		
+
 		File rootdir = new CaseInsensitiveFile(SELENIUM_PLUS).toFile();
 		File libsdir = new CaseInsensitiveFile(rootdir, "libs").toFile();
-		
+
 		File[] files = libsdir.listFiles(new FilenameFilter(){ public boolean accept(File dir, String name){
 			try{ return name.toLowerCase().startsWith(SELENIUM_SERVER_JAR_PART_NAME);}catch(Exception x){ return false;}
 		}});
-		
+
 		File jarfile = null;
-		
+
 		// if more than one, find the latest
 		if(files.length > 1){
 			long diftime = 0;
@@ -475,9 +473,9 @@ public class BaseProject {
 				}
 			}
 		}else{
-			jarfile = files[0];			
+			jarfile = files[0];
 		}
-		
+
 		return jarfile;
 	}
 

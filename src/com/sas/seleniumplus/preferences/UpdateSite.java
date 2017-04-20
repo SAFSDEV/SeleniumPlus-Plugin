@@ -108,9 +108,9 @@ public class UpdateSite
 
 	@Override
 	protected void performDefaults() {
+		super.performDefaults();
 		//According to the default preference value to enable/disable the StringFieldEditors
 		enableStringFields(true, true);
-		super.performDefaults();
 	}
 
 	/**
