@@ -25,7 +25,7 @@ public class UpdateSite
 	static{
 		boolEditorToStringEditorMaps.put(PreferenceConstants.BOOLEAN_VALUE_LIB, PreferenceConstants.UPDATESITE_LIB_URL);
 		boolEditorToStringEditorMaps.put(PreferenceConstants.BOOLEAN_VALUE_PLUGIN, PreferenceConstants.UPDATESITE_PLUGIN_URL);
-		boolEditorToStringEditorMaps.put(PreferenceConstants.BOOLEAN_VALUE_SOURCE_CORE, PreferenceConstants.UPDATESITE_SOURCECORE_URL);
+		boolEditorToStringEditorMaps.put(PreferenceConstants.BOOLEAN_VALUE_SOURCE_CODE, PreferenceConstants.UPDATESITE_SOURCECODE_URL);
 		boolEditorToStringEditorMaps.put(PreferenceConstants.BOOLEAN_VALUE_JAVADOC, PreferenceConstants.UPDATESITE_JAVADOC_URL);
 	}
 
@@ -40,14 +40,14 @@ public class UpdateSite
 //	private static final String[] stringFieldEditorNames = {
 //		PreferenceConstants.UPDATESITE_LIB_URL,
 //		PreferenceConstants.UPDATESITE_PLUGIN_URL,
-//		PreferenceConstants.UPDATESITE_SOURCECORE_URL,
+//		PreferenceConstants.UPDATESITE_SOURCECODE_URL,
 //		PreferenceConstants.UPDATESITE_JAVADOC_URL
 //	};
 
 	private static final String[] booleanFieldEditorNames = {
 		PreferenceConstants.BOOLEAN_VALUE_LIB,
 		PreferenceConstants.BOOLEAN_VALUE_PLUGIN,
-		PreferenceConstants.BOOLEAN_VALUE_SOURCE_CORE,
+		PreferenceConstants.BOOLEAN_VALUE_SOURCE_CODE,
 		PreferenceConstants.BOOLEAN_VALUE_JAVADOC
 	};
 

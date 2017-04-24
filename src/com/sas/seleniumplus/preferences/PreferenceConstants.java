@@ -17,30 +17,26 @@ public class PreferenceConstants {
 	//The name of StringFieldEditors and they also served as key prefix in perferences.properties
 	public static final String UPDATESITE_LIB_URL 			= "UpdatesiteLibUrl";
 	public static final String UPDATESITE_PLUGIN_URL 		= "UpdatesitePluginUrl";
-	public static final String UPDATESITE_SOURCECORE_URL 	= "UpdatesiteSourceCoreUrl";
-	public static final String UPDATESITE_SOURCEPLUGIN_URL 	= "UpdatesiteSourcePluginUrl";
+	public static final String UPDATESITE_SOURCECODE_URL 	= "UpdatesiteSourceCodeUrl";
 	public static final String UPDATESITE_JAVADOC_URL 		= "UpdatesiteJavadocUrl";
 	//Please update the array 'stringEditorNames' if any new string key is added
 	public static final String[] stringEditorNames = {
 		UPDATESITE_LIB_URL,
 		UPDATESITE_PLUGIN_URL,
-		UPDATESITE_SOURCECORE_URL,
-		UPDATESITE_SOURCEPLUGIN_URL,
+		UPDATESITE_SOURCECODE_URL,
 		UPDATESITE_JAVADOC_URL
 	};
 
 	//The name of BooleanFieldEditors and they also served as key prefix in perferences.properties
 	public static final String BOOLEAN_VALUE_LIB 			= "chkLibValue";
 	public static final String BOOLEAN_VALUE_PLUGIN 		= "chkPluginValue";
-	public static final String BOOLEAN_VALUE_SOURCE_CORE 	= "chkSourceCoreValue";
-	public static final String BOOLEAN_VALUE_SOURCE_PLUGIN 	= "chkSourcePluginValue";
+	public static final String BOOLEAN_VALUE_SOURCE_CODE 	= "chkSourceCodeValue";
 	public static final String BOOLEAN_VALUE_JAVADOC 		= "chkJavadocValue";
 	//Please update the array 'booleanEditorNames' if any new boolean key is added
 	public static final String[] booleanEditorNames 	= {
 		BOOLEAN_VALUE_LIB,
 		BOOLEAN_VALUE_PLUGIN,
-		BOOLEAN_VALUE_SOURCE_CORE,
-		BOOLEAN_VALUE_SOURCE_PLUGIN,
+		BOOLEAN_VALUE_SOURCE_CODE,
 		BOOLEAN_VALUE_JAVADOC
 	};
 
