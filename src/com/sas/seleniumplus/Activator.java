@@ -55,21 +55,24 @@ public class Activator extends AbstractUIPlugin implements org.eclipse.ui.IStart
 	/** Classpath Variable name "SELENIUMPLUS_HOME", this variable is defined for Eclipse */
 	public static final String SELENIUMPLUS_HOME = "SELENIUMPLUS_HOME";
 
-	// The shared instance
+	/** The shared Plugin instance */
 	private static Activator plugin;
 
+	/** The shared Preference ResourceBundle instance */
 	private static ResourceBundle preferences = null;
 
+	/** The SeleniumPlus home directory got from environment {@link BaseProject#SELENIUM_PLUS_ENV} */
 	public static final String seleniumhome = System.getenv(BaseProject.SELENIUM_PLUS_ENV);
 
 	/**
-	 * The constructor
+	 * The default constructor
 	 */
 	public Activator() {
+		super();
 		if(seleniumhome == null) throw new IllegalStateException("SELENIUM_PLUS System Environment '"+BaseProject.SELENIUM_PLUS_ENV+"' was not set!");
 	}
 
-	/*
+	/**
 	 * @see org.eclipse.ui.IStartup
 	 */
 	public void earlyStartup() {
@@ -81,7 +84,7 @@ public class Activator extends AbstractUIPlugin implements org.eclipse.ui.IStart
 		}
 	}
 
-	/*
+	/**
 	 * @see org.eclipse.ui.plugin.AbstractUIPlugin#start(org.osgi.framework.BundleContext)
 	 */
 	@Override
@@ -177,20 +180,22 @@ public class Activator extends AbstractUIPlugin implements org.eclipse.ui.IStart
 	}
 
 	/**
-	 *
-	 * @param key String, the preference key in the resource bundle properties file
+	 * Get the preference's value from the resource bundle 'preferences'.<br/>
+	 * <b>Note:</b><br/>
+	 * 1. This should be called after the invocation of {@link #startup()}, inside which the method {@link #initResourceBundle()} is called.<br/>
+	 * 2. User needs to catch all the RuntimeExceptions himself.<br/>
+	 * @param resourceKey String, the preference key in the resource bundle properties file
 	 * @return String, the preference default value
 	 */
-	//User needs to catch all the RuntimeExceptions himself
-	public static String getPreference(String key){
-		String value = preferences.getString(key);
+	public static String getPreference(String resourceKey){
+		String value = preferences.getString(resourceKey);
 		return value.trim();
 	}
 
 	/**
-	 * Returns the shared instance
+	 * Returns the shared Activator instance, it is also a Plugin object.
 	 *
-	 * @return the shared instance
+	 * @return Activator, the shared Activator instance; or null if this Activator has not been properly initialized.
 	 */
 	public static Activator getDefault() {
 		return plugin;
@@ -499,6 +504,7 @@ public class Activator extends AbstractUIPlugin implements org.eclipse.ui.IStart
 	/**
 	 * @return IProxyService
 	 */
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public IProxyService getProxyService() {
         try {
         	Bundle bundle = FrameworkUtil.getBundle(getClass());

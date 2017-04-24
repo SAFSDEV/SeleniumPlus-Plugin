@@ -11,19 +11,23 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.Path;
+import org.eclipse.jdt.core.IClasspathAttribute;
 import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.safs.tools.CaseInsensitiveFile;
 
 import com.sas.seleniumplus.Activator;
+import com.sas.seleniumplus.preferences.PreferenceConstants;
 import com.sas.seleniumplus.projects.BaseProject;
 
 public class CommonLib {
 
-	private String latestServer;
+	private static String latestServer;
 
 	/**
 	 * Locate the latest (last modified) selenium-server-standalone JAR file in the libs directory
@@ -34,7 +38,7 @@ public class CommonLib {
 	 * @throws ExecutionException if SELENIUM_PLUS does not appear to be properly installed on the system.
 	 * @see #refreshBuildPath()
 	 */
-	public File getLatestSeleniumServerJARFile() throws ExecutionException{
+	public static File getLatestSeleniumServerJARFile() throws ExecutionException{
 		String seleniumdir = System.getenv(BaseProject.SELENIUM_PLUS_ENV);
 
 		if (seleniumdir == null || seleniumdir.length() == 0) {
@@ -107,17 +111,34 @@ public class CommonLib {
 	 * Currently that is the selenium standalone server JAR, seleniumplus JAR, and JSTAFEmbedded JAR.
 	 * @throws ExecutionException
 	 */
-	public IClasspathEntry[] getLatestSeleniumPlusJARS() throws ExecutionException{
-		File jarfile = getLatestSeleniumServerJARFile();
-		IClasspathEntry selenium_server_jar = JavaCore.newVariableEntry(
-				new Path(Activator.SELENIUMPLUS_HOME + "/libs/"
-						+ jarfile.getName()), null, null);
-		IClasspathEntry seleniumplus_jar = JavaCore.newVariableEntry(new Path(
-				Activator.SELENIUMPLUS_HOME + "/libs/"
-						+ BaseProject.SELENIUMPLUS_JAR), null, null);
-		IClasspathEntry jstaf_embedded_jar = JavaCore.newVariableEntry(
-				new Path(Activator.SELENIUMPLUS_HOME + "/libs/"
-						+ BaseProject.JSTAF_EMBEDDDED_JAR), null, null);
+	public static IClasspathEntry[] getLatestSeleniumPlusJARS() throws ExecutionException{
+		IPath path = null;
+		IPath sourcepath = null;
+
+		//selenium-server-standalone.jar
+		File seleniumjar = getLatestSeleniumServerJARFile();
+		path = new Path(Activator.SELENIUMPLUS_HOME + "/libs/" + seleniumjar.getName());
+		IClasspathEntry selenium_server_jar = JavaCore.newVariableEntry(path, null, null);
+
+		//seleniumplus.jar, attache "javadoc" and "source code"
+		IClasspathAttribute[] attrs = null;
+		IPreferenceStore store = Activator.getDefault().getPreferenceStore();
+		if(store.getBoolean(PreferenceConstants.BOOLEAN_VALUE_JAVADOC)){
+			String javadocURL = store.getString(PreferenceConstants.UPDATESITE_JAVADOC_URL);
+			attrs = new  IClasspathAttribute[]{
+				JavaCore.newClasspathAttribute(IClasspathAttribute.JAVADOC_LOCATION_ATTRIBUTE_NAME, javadocURL)
+			};
+		}
+		if(store.getBoolean(PreferenceConstants.BOOLEAN_VALUE_SOURCE_CODE)){
+			sourcepath = new Path(Activator.SELENIUMPLUS_HOME + "/source/"+ BaseProject.SAFSSELENIUM_PLUS_SOURCE_CORE);
+		}
+
+		path = new Path(Activator.SELENIUMPLUS_HOME + "/libs/"+ BaseProject.SELENIUMPLUS_JAR);
+		IClasspathEntry seleniumplus_jar = JavaCore.newVariableEntry(path, sourcepath, null, null, attrs, false);
+
+		//JSTAFEmbedded.jar
+		path = new Path(Activator.SELENIUMPLUS_HOME + "/libs/"+ BaseProject.JSTAF_EMBEDDDED_JAR);
+		IClasspathEntry jstaf_embedded_jar = JavaCore.newVariableEntry(path, null, null);
 
 		return new IClasspathEntry[]{seleniumplus_jar, jstaf_embedded_jar, selenium_server_jar};
 	}
@@ -134,7 +155,7 @@ public class CommonLib {
 	 * @throws CoreException -- most likely if we are trying to process a Closed project.
 	 * @see #getLatestSeleniumPlusJARS()
 	 */
-	public boolean refreshBuildPath(IProject iP, IClasspathEntry... cpEntries) throws CoreException, ExecutionException {
+	public static boolean refreshBuildPath(IProject iP, IClasspathEntry... cpEntries) throws CoreException, ExecutionException {
 		try {
 
 			Activator.log("CommonLib.refreshBuildPath(IProject) processing Project " + iP.getName()+" with Classpath Entries: "+Arrays.toString(cpEntries));
@@ -159,30 +180,43 @@ public class CommonLib {
 		    	}
 		    }
 
+		    IClasspathEntry seleniumPlusEntry = null;
+
 			if (isSeleniumPlus) {
 				Activator.log(iP.getName()+" does appear to be a SeleniumPlus Project.");
 				String pathName = null;
 
+				//Add selenium-plus dependencies except 'seleniumplus.jar', which will be handled later for 'javadoc' and 'source attachment'
+				if(cpEntries!=null){
+					for(IClasspathEntry cp: cpEntries){
+						if(cp.getPath().toString().contains(BaseProject.SELENIUMPLUS_JAR)){
+							seleniumPlusEntry = cp;
+						}else{
+							entriesToSave.add(cp);
+						}
+					}
+				}
+
+				//add custom specific jar entries
 				for (int j = 0; j < existingEntries.length; j++) {
 
 					IClasspathEntry entry = existingEntries[j];
 
-					if (entry.getEntryKind() == IClasspathEntry.CPE_VARIABLE
-							|| entry.getEntryKind() == IClasspathEntry.CPE_LIBRARY) {
+					if (entry.getEntryKind() == IClasspathEntry.CPE_VARIABLE ||
+					    entry.getEntryKind() == IClasspathEntry.CPE_LIBRARY) {
 						pathName = entry.getPath().toString();
 
 						if (pathName.contains(BaseProject.SELENIUM_SERVER_JAR_PART_NAME) ||
-							pathName.contains(BaseProject.SELENIUMPLUS_JAR) ||
 							pathName.contains(BaseProject.JSTAF_EMBEDDDED_JAR)){
+							continue;
+						}else if(pathName.contains(BaseProject.SELENIUMPLUS_JAR)){
+							//Handle 'javadoc' and 'source attachment'
+							entriesToSave.add(checkSleneiumPlusJarEntry(iP, entry, seleniumPlusEntry));
 							continue;
 						}
 
 					}
 					entriesToSave.add(entry);
-				}
-
-				if(cpEntries!=null && cpEntries.length>0){
-					for(IClasspathEntry cp: cpEntries) entriesToSave.add(cp);
 				}
 
 				IClasspathEntry[] newClasspath = entriesToSave.toArray(new IClasspathEntry[0]);
@@ -201,7 +235,113 @@ public class CommonLib {
 		return false;
 	}
 
-	public void refreshBuildPath() throws ExecutionException {
+	/**
+	 * Check if the "javadoc" and "source attachment" are the same in old and new ClasspathEntry.<br/>
+	 * Dialog will be prompted for user to choose if they are different.<br/>
+	 * @param iP IProject, the selenium plus test project
+	 * @param oldSePlusEntry IClasspathEntry, the old selenium plus classpath entry
+	 * @param newSePlusEntry IClasspathEntry, the new selenium plus classpath entry
+	 * @return IClasspathEntry, The class path entry with user preferred "javadoc" and "source attachment".
+	 */
+	private static IClasspathEntry checkSleneiumPlusJarEntry(IProject iP, IClasspathEntry oldSePlusEntry, IClasspathEntry newSePlusEntry){
+
+		//Compare javadoc.
+		IClasspathAttribute[] attrs = oldSePlusEntry.getExtraAttributes();
+		String oldJavadocValue = null;
+		for(IClasspathAttribute attr: attrs){
+			if(IClasspathAttribute.JAVADOC_LOCATION_ATTRIBUTE_NAME.equals(attr.getName())){
+				oldJavadocValue = attr.getValue();
+				break;
+			}
+		}
+
+		IClasspathAttribute[] newAttrs = newSePlusEntry.getExtraAttributes();
+		String newJavadocValue = null;
+		for(IClasspathAttribute attr: newAttrs){
+			if(IClasspathAttribute.JAVADOC_LOCATION_ATTRIBUTE_NAME.equals(attr.getName())){
+				newJavadocValue = attr.getValue();
+				break;
+			}
+		}
+		String javadocValue = chooseAsset(iP, oldJavadocValue, newJavadocValue, "SeleniumPlus Java Doc");
+
+		//Compare source attachment
+		IPath oldSourcePath = oldSePlusEntry.getSourceAttachmentPath();
+		IPath newSourcePath = newSePlusEntry.getSourceAttachmentPath();
+		IPath sourcePath = chooseAsset(iP, oldSourcePath, newSourcePath, "SeleniumPlus Java Source");
+
+		//Use the newSePlusEntry
+		if(sourcePath==newSourcePath && javadocValue==newJavadocValue){
+			return newSePlusEntry;
+		}
+
+		//Use the user selected "javadoc" and "source code attachment"
+		IPath latestSePlusJar = newSePlusEntry.getPath();
+		return JavaCore.newVariableEntry(latestSePlusJar, sourcePath, null, null,
+				//IClasspathAttribute[], TODO Should we add the attributes of the oldSePlusEntry?
+				new IClasspathAttribute[]{JavaCore.newClasspathAttribute(IClasspathAttribute.JAVADOC_LOCATION_ATTRIBUTE_NAME, javadocValue)},
+				false);
+	}
+
+	private static <T> T chooseAsset(IProject iP, T oldAsset, T newAsset, String assetName){
+		T asset = null;
+
+		if(newAsset==null){
+			if(oldAsset!=null){
+				//Do you want to clean the old asset?
+				Object[] options = {
+						"Clean "+assetName,
+						"Keep "+assetName
+				};
+				int selected = TopMostOptionPane.showOptionDialog(null,
+								"SeleniumPlus project '"+iP.getName()+"':\n"+
+								"Old "+assetName+" location is '"+oldAsset+"'\n\n"+
+								"Would you like to clean it?",
+								"Update "+assetName,
+								JOptionPane.YES_NO_OPTION,
+								JOptionPane.QUESTION_MESSAGE,
+								null,
+								options,
+								options[0]);
+				if(JOptionPane.YES_OPTION==selected){
+					asset = newAsset;
+				}else{
+					asset = oldAsset;
+				}
+			}
+		}else{
+			if(oldAsset==null){
+				asset = newAsset;
+			}else{
+				if(!newAsset.toString().equals(oldAsset.toString())){
+					Object[] options = {
+							"Use New "+assetName,
+							"Use Old "+assetName
+					};
+					int selected = TopMostOptionPane.showOptionDialog(null,
+							"SeleniumPlus project '"+iP.getName()+"':\n"+
+									"Old "+assetName+" location is '"+oldAsset+"'\n"+
+									"New "+assetName+" location is '"+newAsset+"'\n\n"+
+									"Would you like to use the new one?",
+									"Update "+assetName,
+									JOptionPane.YES_NO_OPTION,
+									JOptionPane.QUESTION_MESSAGE,
+									null,
+									options,
+									options[0]);
+					if(JOptionPane.YES_OPTION==selected){
+						asset = newAsset;
+					}else{
+						asset = oldAsset;
+					}
+				}
+			}
+		}
+
+		return asset;
+	}
+
+	public static void refreshBuildPath() throws ExecutionException {
 
 		int updatedProject = 0;
 		int nonSelProject = 0;

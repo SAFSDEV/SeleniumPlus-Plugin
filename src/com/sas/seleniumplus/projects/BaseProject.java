@@ -65,7 +65,8 @@ public class BaseProject {
 	public final static String SAFSSELENIUM_JAR = "safsselenium.jar";
 	public final static String STAF_JAR = "JSTAF.jar";
 	public final static String SELENIUM_SERVER_JAR_PART_NAME = "selenium-server-standalone";
-
+	/** build path attachment source zip*/
+	public final static String SAFSSELENIUM_PLUS_SOURCE_CORE = "source_core.zip";
 
 	/** "TestCase1" */
 	public static String TESTCASECLASS_FILE = "TestCase1";
