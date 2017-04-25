@@ -7,6 +7,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
 import com.sas.seleniumplus.Activator;
+import com.sas.seleniumplus.CommonLib;
 
 public class RemoteServer extends FieldEditorPreferencePageDefault
 						  implements IWorkbenchPreferencePage {
@@ -22,8 +23,8 @@ public class RemoteServer extends FieldEditorPreferencePageDefault
 
 	@Override
 	public void init(IWorkbench workbench) {
-		setPreferenceStore(Activator.getDefault().getPreferenceStore());
-	    setDescription(Activator.getPreference("remote.server.preference.page.desc"));
+		setPreferenceStore(CommonLib.getPreferenceStore());
+	    setDescription(Activator.getResource(PreferenceConstants.PAGE_DESCRIPTION_REMOTE_SERVER));
 	}
 
 	@Override

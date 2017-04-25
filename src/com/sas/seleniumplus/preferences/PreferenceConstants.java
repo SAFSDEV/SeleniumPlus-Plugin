@@ -14,6 +14,10 @@ public class PreferenceConstants {
 	 * It is used to hold the custom resource bundles  */
 	public static final String RESOURCE_BUNDLE_CUSTOM_FOLDER		= File.separator+"eclipse"+File.separator+"configuration"+File.separator+"com.sas.seleniumplus";
 
+
+	public static final String PAGE_DESCRIPTION_REMOTE_SERVER 			= "remote.server.preference.page.desc";
+	public static final String PAGE_DESCRIPTION_UPDATE_SITE 			= "update.site.preference.page.desc";
+
 	//The name of StringFieldEditors and they also served as key prefix in perferences.properties
 	public static final String UPDATESITE_LIB_URL 			= "UpdatesiteLibUrl";
 	public static final String UPDATESITE_PLUGIN_URL 		= "UpdatesitePluginUrl";
