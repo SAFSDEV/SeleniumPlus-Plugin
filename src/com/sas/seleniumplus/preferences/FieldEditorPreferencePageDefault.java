@@ -92,6 +92,7 @@ public class FieldEditorPreferencePageDefault extends FieldEditorPreferencePage{
 	@Override
 	protected void createFieldEditors() {
 		Map<String/*editorName*/, Class<?>/*editor's class*/> fieldEditorsToAdd = getFieldEditorsToAdd();
+		//key in the resource bundle, pointing to the label for this editor.
 		String key = null;
 		Class<?> editorClass = null;
 
@@ -100,8 +101,8 @@ public class FieldEditorPreferencePageDefault extends FieldEditorPreferencePage{
 			editorClass = fieldEditorsToAdd.get(name);
 
 			try {
-				Constructor<?> c =  (Constructor<?>) editorClass.getConstructor(String.class, String.class, Composite.class);
-				addField( (FieldEditor)c.newInstance(name, Activator.getPreference(key), getFieldEditorParent()) );
+				Constructor<?> c =  (Constructor<?>) editorClass.getConstructor(String.class/*name*/, String.class/*label*/, Composite.class/*editor's parent*/);
+				addField( (FieldEditor)c.newInstance(name, Activator.getResource(key), getFieldEditorParent()) );
 			} catch (Exception e) {
 				Activator.warn(getClass().getName()+": Failed to add editor '"+name+"' of type '"+editorClass.getSimpleName()+"'");
 			}
@@ -109,19 +110,24 @@ public class FieldEditorPreferencePageDefault extends FieldEditorPreferencePage{
 
 	}
 
+	@Override
 	protected void addField(FieldEditor editor) {
-		//Add FieldEditor to cache
+		//Add FieldEditor to map cache according to their class
+		List<FieldEditor> editorList = null;
 		for(Class<?> clazz:clazzToFieldEditorList.keySet()){
 			if(clazz.isInstance(editor)){
-				clazzToFieldEditorList.get(clazz).add(editor);
+				editorList = clazzToFieldEditorList.get(clazz);
+				editorList.add(editor);
 				break;
 			}
 		}
 		super.addField(editor);
 	}
 
+	@Override
 	protected void performDefaults() {
-		//Load the default from external resource bundle
+		//Load the default from external resource bundle,
+		//if we can get the 'resource bundle' reload by itself, then we don't need to call Activator.initResourceBundle() here.
 		Activator.initResourceBundle();
 		PreferenceInitializer.loadDefaultFromResourceBundle();
 		super.performDefaults();

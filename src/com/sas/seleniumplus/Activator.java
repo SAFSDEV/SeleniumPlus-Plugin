@@ -184,11 +184,11 @@ public class Activator extends AbstractUIPlugin implements org.eclipse.ui.IStart
 	 * <b>Note:</b><br/>
 	 * 1. This should be called after the invocation of {@link #startup()}, inside which the method {@link #initResourceBundle()} is called.<br/>
 	 * 2. User needs to catch all the RuntimeExceptions himself.<br/>
-	 * @param resourceKey String, the preference key in the resource bundle properties file
+	 * @param preferenceKey String, the preference key in the resource bundle properties file
 	 * @return String, the preference default value
 	 */
-	public static String getPreference(String resourceKey){
-		String value = preferences.getString(resourceKey);
+	public static String getResource(String preferenceKey){
+		String value = preferences.getString(preferenceKey);
 		return value.trim();
 	}
 

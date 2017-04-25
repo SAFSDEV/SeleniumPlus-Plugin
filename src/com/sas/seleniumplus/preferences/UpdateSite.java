@@ -14,6 +14,7 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
 import com.sas.seleniumplus.Activator;
+import com.sas.seleniumplus.CommonLib;
 
 public class UpdateSite
 	extends FieldEditorPreferencePageDefault
@@ -102,8 +103,8 @@ public class UpdateSite
 
 	@Override
 	public void init(IWorkbench arg0) {
-		setPreferenceStore(Activator.getDefault().getPreferenceStore());
-		setDescription(Activator.getPreference("update.site.preference.page.desc"));
+		setPreferenceStore(CommonLib.getPreferenceStore());
+		setDescription(Activator.getResource(PreferenceConstants.PAGE_DESCRIPTION_REMOTE_SERVER));
 	}
 
 	@Override
@@ -121,7 +122,7 @@ public class UpdateSite
 		String boolEditorName = null;
 		if(fromPreference){
 			boolean enabled = false;
-			IPreferenceStore store = Activator.getDefault().getPreferenceStore();
+			IPreferenceStore store = CommonLib.getPreferenceStore();
 
 			for(FieldEditor booleanEditor: booleanFieldEditors){
 				try{
