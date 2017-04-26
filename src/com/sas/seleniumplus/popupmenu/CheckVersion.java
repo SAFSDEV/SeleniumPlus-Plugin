@@ -25,12 +25,10 @@ public class CheckVersion extends AbstractHandler {
 
 		String rootdir = System.getenv(BaseProject.SELENIUM_PLUS_ENV);
 		final String SELENIUM_SERVER_JAR_PART_NAME = "selenium-server-standalone";
-		
-		try {
 
-		
+		try {
 			File libsdir = new CaseInsensitiveFile(rootdir, "libs").toFile();
-			
+
 			if(!libsdir.isDirectory()){
 				Activator.log("CheckVersion cannot deduce valid SELENIUM_PLUS/libs directory at: "+libsdir.getAbsolutePath());
 				throw new ExecutionException("CheckVersion cannot deduce valid SELENIUM_PLUS/libs directory at: "+libsdir.getAbsolutePath());
@@ -38,14 +36,14 @@ public class CheckVersion extends AbstractHandler {
 			File[] files = libsdir.listFiles(new FilenameFilter(){ public boolean accept(File dir, String name){
 				try{ return name.toLowerCase().startsWith(SELENIUM_SERVER_JAR_PART_NAME);}catch(Exception x){ return false;}
 			}});
-			
+
 			File jarfile = null;
-			
+
 			if(files.length ==0){
 				Activator.log("CheckVersion cannot deduce SELENIUM_PLUS selenium-server-standalone* JAR file in /libs directory.");
 				throw new ExecutionException("CheckVersion cannot deduce SELENIUM_PLUS selenium-server-standalone* JAR file in /libs directory.");
 			}
-			
+
 			// if more than one, find the latest
 			if(files.length > 1){
 				long diftime = 0;
@@ -56,14 +54,14 @@ public class CheckVersion extends AbstractHandler {
 					}
 				}
 			}else{
-				jarfile = files[0];			
+				jarfile = files[0];
 			}
-			
+
 			if (jarfile == null)
 				JOptionPane.showMessageDialog(null,
 						"selenium-server-standalone jar not found in SeleniumPlus libs dir.",
 						"File Not Found", JOptionPane.NO_OPTION);
-			
+
 			java.util.jar.JarFile jar = new java.util.jar.JarFile(jarfile);
 			java.util.jar.Manifest manifest = jar.getManifest();
 
@@ -91,7 +89,7 @@ public class CheckVersion extends AbstractHandler {
 		} catch (IOException e) {
 			JOptionPane.showMessageDialog(null,
 						"selenium-server-standalone.jar not found",
-						"Jar not found", JOptionPane.NO_OPTION);			
+						"Jar not found", JOptionPane.NO_OPTION);
 		}
 
 		return event;

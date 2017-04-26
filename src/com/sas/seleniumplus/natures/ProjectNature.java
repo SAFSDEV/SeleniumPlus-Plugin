@@ -7,7 +7,7 @@ import org.eclipse.core.runtime.CoreException;
 public class ProjectNature implements IProjectNature {
 
 	public static final String NATURE_ID = "seleniumplus.projectNature"; //$NON-NLS-1$
-	
+
 	@Override
 	public void configure() throws CoreException {
 		// TODO Auto-generated method stub

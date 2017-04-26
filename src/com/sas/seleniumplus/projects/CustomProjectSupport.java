@@ -34,7 +34,7 @@ public class CustomProjectSupport {
 	/**
 	 * For this marvelous project we need to: - create the default Eclipse
 	 * project - add the custom project nature - create the folder structure
-	 * 
+	 *
 	 * @param projectName
 	 * @param location
 	 * @param natureId
@@ -48,7 +48,7 @@ public class CustomProjectSupport {
 		IProject project = createBaseProject(projectName, location);
 		packageDir = BaseProject.SRC_SRC_DIR+ "/com/" + companyName.toLowerCase() +"/"+ projectName.toLowerCase() +"/"+ BaseProject.SRC_TEST_DIR+"/" ;
 		mapPkg = "com." + companyName.toLowerCase() + "."+ projectName.toLowerCase() ;
-		
+
 		try {
 			addNature(project);
 
@@ -57,9 +57,9 @@ public class CustomProjectSupport {
 					packageDir + "/map", // what is this?
 					BaseProject.TEST_DIR,
 					BaseProject.BENCH_DIR,
-					BaseProject.DIF_DIR, 
+					BaseProject.DIF_DIR,
 					BaseProject.LOGS_DIR,
-					BaseProject.DATAPOOL_DIR 
+					BaseProject.DATAPOOL_DIR
 			};
 			addToProjectStructure(project, paths);
 		} catch (Exception e) {
@@ -72,7 +72,7 @@ public class CustomProjectSupport {
 
 	/**
 	 * Just do the basics: create a basic project.
-	 * 
+	 *
 	 * @param location
 	 * @param projectName
 	 */
@@ -145,14 +145,14 @@ public class CustomProjectSupport {
 			createFolder((IFolder) parent);
 		}
 		if (!folder.exists()) {
-			folder.create(false, true, null);			
+			folder.create(false, true, null);
 		}
 	}
 
 	/**
 	 * Create a folder structure with a parent root, overlay, and a few child
 	 * folders.
-	 * 
+	 *
 	 * @param newProject
 	 * @param paths
 	 * @throws CoreException
@@ -164,8 +164,8 @@ public class CustomProjectSupport {
 			IFolder etcFolders = newProject.getFolder(path);
 			createFolder(etcFolders);
 		}
-		
-		
+
+
 		/**
 		 * Create sample class
 		 */
@@ -174,9 +174,9 @@ public class CustomProjectSupport {
 		String tmp_pkg = testPkg.toString();
 		String[] packageName = tmp_pkg.split(BaseProject.SRC_SRC_DIR+"/");
 		String newPackage = packageName[1].replaceAll("/", ".");
-		
+
 		if (testPkg.exists()){
-			
+
 			IFile testclass = testPkg.getFile(testClass + ".java");
 			InputStream testclassstream = FileTemplates.testClass(newProject.getName(),newPackage,mapPkg, testClass);
 			testclass.create(testclassstream, true, null);
@@ -187,7 +187,7 @@ public class CustomProjectSupport {
 		 * Map and Map order files
 		 */
 		IFolder mapFolder = newProject.getFolder(BaseProject.DATAPOOL_DIR);
-		
+
 		if (mapFolder.exists()) {
 
 			IFile appMap = mapFolder.getFile(newProject.getName()+BaseProject.APPMAP_FILE);
@@ -204,8 +204,8 @@ public class CustomProjectSupport {
 			mapstream = FileTemplates.appMapOrder(newProject.getName());
 			appMap.create(mapstream, true, null);
 			mapstream.close();
-			
-			
+
+
 		}
 
 		/**

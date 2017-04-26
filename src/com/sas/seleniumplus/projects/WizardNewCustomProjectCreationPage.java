@@ -1,5 +1,5 @@
 /**
- * 
+ *
  * *****************************************************************************
  * Copyright (c) 2000, 2013 IBM Corporation and others.
  * All rights reserved. This program and the accompanying materials
@@ -63,28 +63,27 @@ import org.eclipse.ui.internal.ide.dialogs.ProjectContentsLocationArea.IErrorMes
  * </p>
  */
 public class WizardNewCustomProjectCreationPage extends WizardPage {
-
-       // initial value stores
+    // initial value stores
     private String initialProjectFieldValue;
 
     // widgets
     Text projectNameField;
-    
+
     private final String lblCompanyInitial = "Company domain (ex: sas):";
     private String initialCompanyInitialFieldValue = "sas";
-    
+
     Text companyInitialField;
     private final String companyInitialMsg = "Company domain must be specified";
     private final String companyInitialNotValidMsg = "'dot' and 'space' are not valid in company domain";
-    
-    
-    
+
+
+
     private Listener nameModifyListener = new Listener() {
         public void handleEvent(Event e) {
         	setLocationForSelection();
             boolean valid = validatePage();
             setPageComplete(valid);
-                
+
         }
     };
 
@@ -107,11 +106,11 @@ public class WizardNewCustomProjectCreationPage extends WizardPage {
 
     /**
 	 * Creates a new project creation wizard page.
-	 * 
+	 *
 	 * @param pageName
 	 * @param selection
 	 * @param workingSetTypes
-	 * 
+	 *
 	 *@deprecated default placement of the working set group has been removed.
 	 *             If you wish to use the working set block please call
 	 *             {@link #createWorkingSetGroup(Composite, IStructuredSelection, String[])}
@@ -129,7 +128,7 @@ public class WizardNewCustomProjectCreationPage extends WizardPage {
      */
     public void createControl(Composite parent) {
         Composite composite = new Composite(parent, SWT.NULL);
-    
+
 
         initializeDialogUnits(parent);
 
@@ -144,10 +143,10 @@ public class WizardNewCustomProjectCreationPage extends WizardPage {
         if(initialProjectFieldValue != null) {
 			locationArea.updateProjectName(initialProjectFieldValue);
 		}
-        
+
 		// Scale the button based on the rest of the dialog
 		setButtonLayoutData(locationArea.getBrowseButton());
-		
+
         setPageComplete(validatePage());
         // Show description on opening
         setErrorMessage(null);
@@ -155,11 +154,11 @@ public class WizardNewCustomProjectCreationPage extends WizardPage {
         setControl(composite);
         Dialog.applyDialogFont(composite);
     }
-    
+
     /**
 	 * Create a working set group for this page. This method can only be called
 	 * once.
-	 * 
+	 *
 	 * @param composite
 	 *            the composite in which to create the group
 	 * @param selection
@@ -179,7 +178,7 @@ public class WizardNewCustomProjectCreationPage extends WizardPage {
 				supportedWorkingSetTypes);
 		return workingSetGroup;
 	}
-    
+
     /**
 	 * Get an error reporter for the receiver.
 	 * @return IErrorMessageReporter
@@ -200,7 +199,7 @@ public class WizardNewCustomProjectCreationPage extends WizardPage {
 				if(valid) {
 					valid = validatePage();
 				}
-				
+
 				setPageComplete(valid);
 			}
 		};
@@ -218,7 +217,7 @@ public class WizardNewCustomProjectCreationPage extends WizardPage {
         layout.numColumns = 2;
         projectGroup.setLayout(layout);
         projectGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-                          
+
         // new project label
         Label projectLabel = new Label(projectGroup, SWT.NONE);
         projectLabel.setText(IDEWorkbenchMessages.WizardNewProjectCreationPage_nameLabel);
@@ -241,28 +240,28 @@ public class WizardNewCustomProjectCreationPage extends WizardPage {
         data = new GridData(GridData.FILL_HORIZONTAL);
         data.widthHint = SIZING_TEXT_FIELD_WIDTH;
         companyInitialField.setLayoutData(data);
-        companyInitialField.setFont(parent.getFont());        
-        
+        companyInitialField.setFont(parent.getFont());
+
         // Set the initial value first before listener
         // to avoid handling an event during the creation.
         if (initialProjectFieldValue != null) {
 			projectNameField.setText(initialProjectFieldValue);
-		}        
+		}
         projectNameField.addListener(SWT.Modify, nameModifyListener);
         BidiUtils.applyBidiProcessing(projectNameField, BidiUtils.BTD_DEFAULT);
-        
+
         // Set the initial value first before listener
         // to avoid handling an event during the creation.
         if (companyInitialField != null) {
         	companyInitialField.setText(initialCompanyInitialFieldValue);
-		}        
+		}
         companyInitialField.addListener(SWT.Modify, nameModifyListener);
         BidiUtils.applyBidiProcessing(companyInitialField, BidiUtils.BTD_DEFAULT);
     }
 
 
     /**
-     * Returns the current project location path as entered by 
+     * Returns the current project location path as entered by
      * the user, or its anticipated initial value.
      * Note that if the default has been returned the path
      * in a project description used to create a project
@@ -273,10 +272,10 @@ public class WizardNewCustomProjectCreationPage extends WizardPage {
     public IPath getLocationPath() {
         return new Path(locationArea.getProjectLocation());
     }
-    
+
     /**
     /**
-     * Returns the current project location URI as entered by 
+     * Returns the current project location URI as entered by
      * the user, or <code>null</code> if a valid project location
      * has not been entered.
      *
@@ -295,7 +294,7 @@ public class WizardNewCustomProjectCreationPage extends WizardPage {
 	 * responsibility of <code>IProject::create</code> invoked by the new
 	 * project resource wizard.
 	 * </p>
-	 * 
+	 *
 	 * @return the new project resource handle
 	 */
     public IProject getProjectHandle() {
@@ -317,7 +316,7 @@ public class WizardNewCustomProjectCreationPage extends WizardPage {
 
         return getProjectNameFieldValue();
     }
-    
+
     /**
      * Returns the current company initial name as entered by the user, or its anticipated
      * initial value.
@@ -332,7 +331,7 @@ public class WizardNewCustomProjectCreationPage extends WizardPage {
     /**
      * Returns the value of the project name field
      * with leading and trailing spaces removed.
-     * 
+     *
      * @return the project name in the field
      */
     private String getProjectNameFieldValue() {
@@ -342,11 +341,11 @@ public class WizardNewCustomProjectCreationPage extends WizardPage {
 
         return projectNameField.getText().trim();
     }
-    
+
     /**
      * Returns the value of the company name field
      * with leading and trailing spaces removed.
-     * 
+     *
      * @return the company name in the field
      */
     private String getCompanyNameFieldValue() {
@@ -362,15 +361,15 @@ public class WizardNewCustomProjectCreationPage extends WizardPage {
      * created. The name is ignored if the createControl(Composite)
      * method has already been called. Leading and trailing spaces
      * in the name are ignored.
-     * Providing the name of an existing project will not necessarily 
-     * cause the wizard to warn the user.  Callers of this method 
-     * should first check if the project name passed already exists 
+     * Providing the name of an existing project will not necessarily
+     * cause the wizard to warn the user.  Callers of this method
+     * should first check if the project name passed already exists
      * in the workspace.
-     * 
+     *
      * @param name initial project name for this page
-     * 
+     *
      * @see IWorkspace#validateName(String, int)
-     * 
+     *
      */
     public void setInitialProjectName(String name) {
         if (name == null) {
@@ -390,9 +389,9 @@ public class WizardNewCustomProjectCreationPage extends WizardPage {
     	locationArea.updateProjectName(getProjectNameFieldValue());
     }
 
-  
+
     /**
-     * Returns whether this page's controls currently all contain valid 
+     * Returns whether this page's controls currently all contain valid
      * values.
      *
      * @return <code>true</code> if all controls are valid, and
@@ -400,7 +399,7 @@ public class WizardNewCustomProjectCreationPage extends WizardPage {
      */
     protected boolean validatePage() {
         IWorkspace workspace = IDEWorkbenchPlugin.getPluginWorkspace();
-       
+
         String projectFieldContents = getProjectNameFieldValue();
         if (projectFieldContents.length()==0) { //$NON-NLS-1$
             setErrorMessage(null);
@@ -420,38 +419,38 @@ public class WizardNewCustomProjectCreationPage extends WizardPage {
             setErrorMessage(IDEWorkbenchMessages.WizardNewProjectCreationPage_projectExistsMessage);
             return false;
         }
-                
+
         IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(
 				getProjectNameFieldValue());
 		locationArea.setExistingProject(project);
-		
+
 		String validLocationMessage = locationArea.checkValidLocation();
 		if (validLocationMessage != null) { // there is no destination location given
 			setErrorMessage(validLocationMessage);
 			return false;
 		}
-		
+
 		String companyFieldContents = getCompanyNameFieldValue();
         if (companyFieldContents.length()==0) { //$NON-NLS-1$
             setErrorMessage(null);
             setMessage(companyInitialMsg);
             return false;
         }
-        
+
     	boolean startdot = companyFieldContents.contains(".");
 		if (startdot) {
 			setErrorMessage(null);
 	        setMessage(companyInitialNotValidMsg);
 	        return false;
-		}	
-        
+		}
+
 		startdot = companyFieldContents.contains(" ");
 		if (startdot) {
 			setErrorMessage(null);
 	        setMessage(companyInitialNotValidMsg);
 	        return false;
-		}	
-		
+		}
+
         setErrorMessage(null);
         setMessage(null);
         return true;
@@ -478,7 +477,7 @@ public class WizardNewCustomProjectCreationPage extends WizardPage {
     /**
 	 * Return the selected working sets, if any. If this page is not configured
 	 * to interact with working sets this will be an empty array.
-	 * 
+	 *
 	 * @return the selected working sets
 	 * @since 3.4
 	 */

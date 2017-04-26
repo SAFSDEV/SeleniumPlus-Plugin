@@ -20,7 +20,7 @@ import com.sas.seleniumplus.Activator;
 
 public class AddMethodAction implements IObjectActionDelegate {
 	private static final String insertTestMethodActionId = "customplugin.editormethod.insertTestingMethodAction";
-	
+
 	@SuppressWarnings("unused")
 	private Shell shell = null;
 
@@ -31,41 +31,41 @@ public class AddMethodAction implements IObjectActionDelegate {
 
 	@Override
 	public void run(IAction action) {
-		
-		IWorkbenchWindow iww = Activator.getDefault().getWorkbench().getActiveWorkbenchWindow();		
-		
-		
+
+		IWorkbenchWindow iww = Activator.getDefault().getWorkbench().getActiveWorkbenchWindow();
+
+
 		try {
 			//get editor
-			IEditorPart editorPart = iww.getActivePage().getActiveEditor();			
-			
+			IEditorPart editorPart = iww.getActivePage().getActiveEditor();
+
 			if (editorPart instanceof AbstractTextEditor) {
 				int offset = 0;
-				
+
 				ITextEditor editor = (ITextEditor)editorPart;
-				IDocumentProvider dp = editor.getDocumentProvider();				
+				IDocumentProvider dp = editor.getDocumentProvider();
 				IEditorSite iEditorSite = editorPart.getEditorSite();
-				
+
 				if (iEditorSite != null) {
-				
+
 					ISelectionProvider selectionProvider = iEditorSite.getSelectionProvider();
 					IDocument doc = dp.getDocument(editor.getEditorInput());
-					
-					
+
+
 					if (selectionProvider != null) {
 						ISelection iSelection = selectionProvider.getSelection();
 						offset = ((ITextSelection) iSelection).getOffset();
-						
+
 						if(action.getId().equals(insertTestMethodActionId)){
 							doc.replace(offset, 0, FileTemplates.getRegressionTestingMethodSignature());
-						}else{							
-							doc.replace(offset, 0, FileTemplates.getMethodSignature());				
+						}else{
+							doc.replace(offset, 0, FileTemplates.getMethodSignature());
 						}
-					}		
-	
+					}
+
 				}
-				
-				
+
+
 				/*
 				IEditorSite iEditorSite = editorPart.getEditorSite();
 				if (iEditorSite != null) {
@@ -79,7 +79,7 @@ public class AddMethodAction implements IObjectActionDelegate {
 						offset = ((ITextSelection) iSelection).getOffset();
 						if (!iSelection.isEmpty()) {
 							selectedText = ((ITextSelection) iSelection).
-									
+
 							//length
 							length = ((ITextSelection) iSelection).getLength();
 							System.out.println("length: " + length);
@@ -91,7 +91,7 @@ public class AddMethodAction implements IObjectActionDelegate {
 					}
 				}
 				*/
- 
+
 			}
 		} catch (Exception e) {		}
 
@@ -108,7 +108,7 @@ public class AddMethodAction implements IObjectActionDelegate {
 		shell = targetPart.getSite().getShell();
 
 	}
-	
-	
+
+
 
 }

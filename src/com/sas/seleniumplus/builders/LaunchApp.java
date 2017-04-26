@@ -25,45 +25,45 @@ public class LaunchApp implements ILaunchShortcut  {
 	public void launch(ISelection selection, String mode) {
 
 		Object o = ((IStructuredSelection) selection).getFirstElement();
-		IJavaElement ij = ((IJavaElement)o); 
+		IJavaElement ij = ((IJavaElement)o);
 		run(ij,mode);
 	}
 
 	@Override
 	public void launch(IEditorPart editor, String mode) {
-		
+
 		IEditorInput input = editor.getEditorInput();
 		IJavaElement o = (IJavaElement) input.getAdapter(IJavaElement.class);
 		run(o,mode);
 	}
-	
+
 	private void run(IJavaElement iJ, String mode){
-		
+
 		String LaunchRunConfig = "Selenium+";
-			
+
 		IJavaProject jProject = ((IJavaElement) iJ).getJavaProject();
-		
+
 		String selectedClassPath = ((IJavaElement) iJ).getPath().toString();
 		String[] tempClass = selectedClassPath.split(jProject.getElementName() + "/"+BaseProject.SRC_TEST_DIR+"/");
 		String classNametmp = tempClass[1].replace("/", ".");
 		String className = classNametmp.substring(0, classNametmp.lastIndexOf("."));
-		
+
 		LaunchManager manager = (LaunchManager) DebugPlugin.getDefault().getLaunchManager();
-		ILaunchConfigurationType type = 
-		 manager.getLaunchConfigurationType(IJavaLaunchConfigurationConstants.ID_JAVA_APPLICATION);		
-		
+		ILaunchConfigurationType type =
+		 manager.getLaunchConfigurationType(IJavaLaunchConfigurationConstants.ID_JAVA_APPLICATION);
+
 		ILaunchConfigurationWorkingCopy wc;
 		try {
-			
+
 			ILaunchConfiguration[] configurations = manager.getLaunchConfigurations(type);
 			   for (int i = 0; i < configurations.length; i++) {
 			      ILaunchConfiguration configuration = configurations[i];
 			      if (configuration.getName().equals(LaunchRunConfig)) {
-			         configuration.delete();			        
+			         configuration.delete();
 			         break;
 			      }
 			   }
-				   
+
 			wc = type.newInstance(null, LaunchRunConfig);
 			wc.setAttribute(
 					IJavaLaunchConfigurationConstants.ATTR_PROJECT_NAME,
@@ -73,11 +73,11 @@ public class LaunchApp implements ILaunchShortcut  {
 					className);
 			ILaunchConfiguration config = wc.doSave();
 			config.launch(ILaunchManager.RUN_MODE, null);
-					 
+
 		} catch (CoreException e) {
 			Activator.log("Run As throws: " + e.getLocalizedMessage());
 		}
-		
+
 	}
-	
+
 }

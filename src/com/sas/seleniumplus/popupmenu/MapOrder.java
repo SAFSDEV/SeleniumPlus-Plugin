@@ -32,21 +32,21 @@ public class MapOrder extends AbstractHandler{
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		
-		IProgressMonitor monitor = null;				
-		Shell shell = HandlerUtil.getActiveShell(event);		
+
+		IProgressMonitor monitor = null;
+		Shell shell = HandlerUtil.getActiveShell(event);
 
 		IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-		
+
 		ISelection iSelection = Activator.getDefault().getWorkbench()
 				.getActiveWorkbenchWindow().getSelectionService().getSelection();
-		
+
 		Object firstElement = ((IStructuredSelection) iSelection).getFirstElement();
-		
-		IPath loc =  ((IFolder) firstElement).getFullPath(); 
-		
+
+		IPath loc =  ((IFolder) firstElement).getFullPath();
+
 		IResource resource = root.findMember(loc);
-		
+
 		String projectName = null;
 		if(firstElement instanceof IAdaptable){
 			IProject project = (IProject)((IAdaptable)firstElement).getAdapter(IProject.class);
@@ -57,8 +57,8 @@ public class MapOrder extends AbstractHandler{
 			}
 			projectName = project.getName();
 		}
-		
-		IContainer container = (IContainer) resource;		
+
+		IContainer container = (IContainer) resource;
 		final IFile file = container.getFile(new Path(BaseProject.APPMAP_ORDER_FILE));
 		try {
 			InputStream stream = FileTemplates.appMapOrder(projectName);
@@ -72,7 +72,7 @@ public class MapOrder extends AbstractHandler{
 			stream.close();
 		} catch (Exception e) {
 		}
-	
+
 		shell.getDisplay().asyncExec(new Runnable() {
 			@Override
 			public void run() {
@@ -83,8 +83,8 @@ public class MapOrder extends AbstractHandler{
 				} catch (PartInitException e) {
 				}
 			}
-		});	
-		
+		});
+
 		return null;
-	}	
+	}
 }

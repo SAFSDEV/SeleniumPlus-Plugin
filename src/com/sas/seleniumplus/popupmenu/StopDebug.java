@@ -10,22 +10,22 @@ public class StopDebug extends AbstractHandler{
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		
+
 		String selenv = System.getenv(BaseProject.SELENIUM_PLUS_ENV);
-		
-		// TODO Need to support Unix/Linux/Mac 
+
+		// TODO Need to support Unix/Linux/Mac
 		boolean isWin = true;
 		if(isWin){
 			try {
-				Runtime.getRuntime().exec("cmd.exe /c start "+selenv+"/extra/DebugShutdown.bat");			
+				Runtime.getRuntime().exec("cmd.exe /c start "+selenv+"/extra/DebugShutdown.bat");
 			} catch (Exception e) {
 				System.out.println("DebugShutdown failed to execute "+ e.getMessage());
 			}
 		}else{
 			System.out.println("DebugShutdown only valid on Windows OS at this time.");
 		}
-		
+
 		return null;
-	}	
+	}
 
 }

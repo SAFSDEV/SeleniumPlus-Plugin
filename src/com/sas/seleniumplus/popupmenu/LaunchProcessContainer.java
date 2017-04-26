@@ -35,7 +35,7 @@ public class LaunchProcessContainer extends AbstractHandler {
 			IVMRunner vmr = vm.getVMRunner(ILaunchManager.RUN_MODE);
 			IProject iproject = Activator.getSelectedProject(null);
 			if(iproject == null){
-				JOptionPane.showConfirmDialog(null, "A SeleniumPlus Project must be selected.", 
+				JOptionPane.showConfirmDialog(null, "A SeleniumPlus Project must be selected.",
 						                            "Invalid Project", JOptionPane.OK_OPTION);
 				throw new ExecutionException("A SeleniumPlus Project must be selected.");
 			}
@@ -47,14 +47,14 @@ public class LaunchProcessContainer extends AbstractHandler {
 			String[] jars = JavaRuntime.computeDefaultRuntimeClassPath(jproject);
 			String jarslog = "";
 			for(String jar:jars) jarslog += jar +"\n";
-			Activator.log("LaunchProcessContainer: The Computed Default Runtime Classpath: \n"+ jarslog);				
-			
+			Activator.log("LaunchProcessContainer: The Computed Default Runtime Classpath: \n"+ jarslog);
+
 			VMRunnerConfiguration config = new VMRunnerConfiguration("org.safs.selenium.spc.WDSPC", jars);
 			config.setWorkingDirectory(rootdir.getAbsolutePath());
 			config.setVMArguments(new String[]{"-Dsafs.project.config="+ inifile.getAbsolutePath()});
 			ILaunch launch = new Launch(null, ILaunchManager.RUN_MODE, null);
 			vmr.run(config,  launch,  null);
-			
+
 		}catch(Exception x){
 			Activator.log("LaunchProcessContainer: Failed to Launch ProcessContainer due to "+x.getClass().getName()+": "+x.getMessage(), x);
 			ExecutionException e = new ExecutionException(x.getMessage());

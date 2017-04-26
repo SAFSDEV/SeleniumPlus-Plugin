@@ -34,7 +34,7 @@ public class AppMapBuilder extends IncrementalProjectBuilder {
 			srcDir = "/"+ BaseProject.SRC_TEST_DIR +"/";
 		} else {
 			srcDir = "/"+ BaseProject.SRC_TEST_DIR +"/";
-		}	
+		}
 
 		String packageName = null;
 		String prjNameTest = null;
@@ -43,27 +43,27 @@ public class AppMapBuilder extends IncrementalProjectBuilder {
 		IJavaProject javaProject = JavaCore.create(getProject());
 		IPackageFragment[] packages = javaProject.getPackageFragments();
 
-		for (IPackageFragment root : packages) {			 
+		for (IPackageFragment root : packages) {
 			if (root.getKind() == IPackageFragmentRoot.K_SOURCE) {
 				// sometimes the project name is FIRST with no leading "."
 				prjNameTest = "."+ root.getElementName();
 				if (prjNameTest.endsWith("." + lcPrjName)){
-					packageName = root.getElementName();					
+					packageName = root.getElementName();
 					break;
 				}
-			}			 
+			}
 		}
 
 		//Try to generate Map file to parent folder of package xxx.testcases
 		if (packageName == null){
-			for (IPackageFragment root : packages) {			 
+			for (IPackageFragment root : packages) {
 				if (root.getKind() == IPackageFragmentRoot.K_SOURCE) {
 					prjNameTest = root.getElementName();
 					if (prjNameTest.endsWith("." + BaseProject.SRC_TESTCASES_SUBDIR)){
 						packageName = prjNameTest.substring(0, prjNameTest.indexOf("." + BaseProject.SRC_TESTCASES_SUBDIR));
 						break;
 					}
-				}			 
+				}
 			}
 		}
 
@@ -84,7 +84,7 @@ public class AppMapBuilder extends IncrementalProjectBuilder {
 			params.add(projectPath + srcDir);
 			//TODD It is better to show some warning message to user that the Map.java is generated in the default package.
 		}
-		
+
 //		for (String string : params) {
 //			System.out.println(string);
 //		}
