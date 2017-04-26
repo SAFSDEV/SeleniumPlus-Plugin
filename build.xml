@@ -306,7 +306,7 @@ as the working directory.
 		</copy>
 	</target>
 
-	<target name="build.jars" depends="init" description="Compile classes and build nested jars for the plug-in: Seleniumplus_plugin.">
+	<target name="build.jars" depends="init, clean" description="Compile classes and build nested jars for the plug-in: Seleniumplus_plugin.">
 		<delete file="${compilation.problem.marker}" quiet="true"/>
 		<available property="@dot" file="${build.result.folder}/@dot"/>
 		<antcall target="@dot"/>
