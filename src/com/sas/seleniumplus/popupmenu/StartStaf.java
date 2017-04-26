@@ -18,9 +18,9 @@ public class StartStaf extends AbstractHandler{
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-				
+
 		String stafdir = System.getenv(BaseProject.STAFDIR_ENV);
-				
+
 		File rootdir = new CaseInsensitiveFile(stafdir).toFile();
 		if(!rootdir.isDirectory()){
 			Activator.log("StartSTAF cannot deduce STAFDIR install directory at: "+rootdir.getAbsolutePath());
@@ -32,15 +32,15 @@ public class StartStaf extends AbstractHandler{
 			Activator.log("StartSTAF cannot deduce STAFDIR/bin directory at: "+bindir.getAbsolutePath());
 			throw new ExecutionException("StartSTAF cannot deduce STAFDIR/bin  directory at: "+ bindir.getAbsolutePath());
 		}
-		
+
 		String stafexe = "STAFProc";
-		File stafFile = new CaseInsensitiveFile(bindir, stafexe).toFile();		
+		File stafFile = new CaseInsensitiveFile(bindir, stafexe).toFile();
 		if(stafFile.isDirectory()) stafexe = stafFile.getAbsolutePath()+"/STAFProc";
-		
+
 		String consoledir = null;
 		IProject iproject = Activator.getSelectedProject(null);
 		if(iproject == null){
-			JOptionPane.showConfirmDialog(null, "A SeleniumPlus Project must be selected.", 
+			JOptionPane.showConfirmDialog(null, "A SeleniumPlus Project must be selected.",
 					                            "Invalid Project", JOptionPane.CANCEL_OPTION);
 			throw new ExecutionException("A SeleniumPlus Project must be selected.");
 		}
@@ -64,27 +64,27 @@ public class StartStaf extends AbstractHandler{
 			throw e;
 		}
 		return null;
-		
-	}	
+
+	}
 
 //	@Override
 //	public Object execute(ExecutionEvent event) throws ExecutionException {
-//		
+//
 //		String selenv = System.getenv(BaseProject.STAFDIR_ENV);
-//		
-//		// Need to support Unix/Linux/Mac 
+//
+//		// Need to support Unix/Linux/Mac
 //		boolean isWin = true;
-//		if(isWin){		
+//		if(isWin){
 //			try {
-//				Runtime.getRuntime().exec("cmd.exe /c start "+selenv+"/startSTAFProc.bat");			
+//				Runtime.getRuntime().exec("cmd.exe /c start "+selenv+"/startSTAFProc.bat");
 //			} catch (Exception e) {
 //				System.out.println("StartSTAF failed to execute "+ e.getMessage());
 //			}
 //		}else{
 //			System.out.println("StartSTAF only valid on Windows OS at this time.");
 //		}
-//		
+//
 //		return null;
-//	}	
+//	}
 }
 

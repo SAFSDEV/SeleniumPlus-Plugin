@@ -22,15 +22,15 @@ import org.eclipse.ui.handlers.HandlerUtil;
 import com.sas.seleniumplus.Activator;
 
 public class Package extends AbstractHandler{
-	
+
 	private Shell shell;
-	
+
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		
-		shell = HandlerUtil.getActiveShell(event);		
+
+		shell = HandlerUtil.getActiveShell(event);
 		PackageWizard dialog = new PackageWizard(shell);
-		IResource resource = Activator.getSelectedResource(null);		
+		IResource resource = Activator.getSelectedResource(null);
 		IProject project = resource.getProject();
 
 		String defaultPkgName = getDefaultPackageName(project);
@@ -41,51 +41,51 @@ public class Package extends AbstractHandler{
 		}else{
 			dialog.setPrePackageName(packageName);
 		}
-		
-		if (dialog.open() == Window.OK) {			
-			String temp = dialog.getPackageName();	
-			packageName = temp.replace(".", "/");			
+
+		if (dialog.open() == Window.OK) {
+			String temp = dialog.getPackageName();
+			packageName = temp.replace(".", "/");
 		} else{
 			return null;
 		}
 		IFolder sourceroot = Activator.getRootSourceFolder(project);
-		IFile file = sourceroot.getFile(new Path(packageName + "/foo"));		
+		IFile file = sourceroot.getFile(new Path(packageName + "/foo"));
 		prepare((IFolder) file.getParent());
-				
+
 		return null;
-	}	
-	
+	}
+
 	public void prepare(IFolder folder) {
 	    if (!folder.exists()) {
 	        prepare((IFolder) folder.getParent());
 	        try {
 				folder.create(false, false, null);
-			} catch (CoreException e) {		
+			} catch (CoreException e) {
 				 MessageDialog.openInformation(shell, "Info",
 				          "Package not created at " + folder.toString() );
 				 return;
 			}
 	    }
 	}
-	
+
 	public static String getDefaultPackageName(IProject iproject){
-		
+
 		 IJavaProject javaProject = JavaCore.create(iproject);
-		 String packageTest = iproject.getName().toLowerCase();		 
+		 String packageTest = iproject.getName().toLowerCase();
 		 String rootName = null;
 		 try {
-			for (IPackageFragment root : javaProject.getPackageFragments()) {					
+			for (IPackageFragment root : javaProject.getPackageFragments()) {
 				 if (root.getKind() == IPackageFragmentRoot.K_SOURCE) {
 					 rootName = root.getElementName();
-					 if (rootName.endsWith("." + packageTest) || 
+					 if (rootName.endsWith("." + packageTest) ||
 					     rootName.equals(packageTest)){
 						 return rootName;
 					 }
-				 }			 
+				 }
 			 }
 		} catch (JavaModelException e) {
-		}	
-		 
+		}
+
 		 return null;
 		}
 }

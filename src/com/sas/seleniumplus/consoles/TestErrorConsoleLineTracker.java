@@ -107,7 +107,7 @@ public class TestErrorConsoleLineTracker implements IConsoleLineTracker {
 			}catch(Exception e){
 				Activator.error(debugmsg, e);
 			}
-			return javasourcefile; 
+			return javasourcefile;
 		}
 
 		/**Go back to the source code at Eclipse editor and focus at a certain line*/
@@ -130,7 +130,7 @@ public class TestErrorConsoleLineTracker implements IConsoleLineTracker {
 					marker.setAttribute(IMarker.LINE_NUMBER, Integer.parseInt(errorTrace.getLine()));
 					IDE.gotoMarker(editor, marker);
 				}else{
-					
+
 				}
 
 			}catch(Exception e){

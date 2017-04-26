@@ -113,7 +113,7 @@ public class TestCaseWizard extends Dialog {
 		if (testclass.length() == 0) {
 			updateStatus("test class name must be specified");
 			return;
-		}		
+		}
 
 		if (testclass.replace('\\', '/').indexOf('/', 1) > 0) {
 			updateStatus("test class name must be valid");
@@ -134,11 +134,11 @@ public class TestCaseWizard extends Dialog {
 			lblMessage.setText(string);
 			if (getButton(IDialogConstants.OK_ID) != null) {
 				getButton(IDialogConstants.OK_ID).setEnabled(false);
-			}		
+			}
 			return;
 		}
 		lblMessage.setText("");
-		getButton(IDialogConstants.OK_ID).setEnabled(true);	
+		getButton(IDialogConstants.OK_ID).setEnabled(true);
 	}
 
 	public String getPackageName() {

@@ -28,20 +28,20 @@ import com.sas.seleniumplus.Activator;
  * EMBEDDEBUG=TRUE
  * </pre>
  * However, this might need to be used re-enabled if using SeleniumPlus with other engines and STAF is in-use.
- * 
+ *
  * @author canagl
  */
 public class StartDebug extends AbstractHandler{
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-	
+
 		try{
 			IVMInstall vm = JavaRuntime.getDefaultVMInstall();
-			IVMRunner vmr = vm.getVMRunner(ILaunchManager.RUN_MODE);			
+			IVMRunner vmr = vm.getVMRunner(ILaunchManager.RUN_MODE);
 			IProject iproject = Activator.getSelectedProject(null);
 			if(iproject == null){
-				JOptionPane.showConfirmDialog(null, "A SeleniumPlus Project must be selected.", 
+				JOptionPane.showConfirmDialog(null, "A SeleniumPlus Project must be selected.",
 						                            "Invalid Project", JOptionPane.OK_OPTION);
 				throw new ExecutionException("A SeleniumPlus Project must be selected.");
 			}
@@ -50,14 +50,14 @@ public class StartDebug extends AbstractHandler{
 			String[] jars = JavaRuntime.computeDefaultRuntimeClassPath(jproject);
 			String jarslog = "";
 			for(String jar:jars) jarslog += jar +"\n";
-			Activator.log("StartDebug: The Computed Default Runtime Classpath: \n"+ jarslog);				
-			
+			Activator.log("StartDebug: The Computed Default Runtime Classpath: \n"+ jarslog);
+
 			VMRunnerConfiguration config = new VMRunnerConfiguration("org.safs.Log", jars);
 			config.setWorkingDirectory(rootdir.getAbsolutePath());
 			config.setVMArguments(new String[]{"-file:"+ rootdir.getAbsolutePath()+"/DebugLog.txt"});
 			ILaunch launch = new Launch(null, ILaunchManager.RUN_MODE, null);
 			vmr.run(config,  launch,  null);
-			
+
 		}catch(Exception x){
 			Activator.log("StartDebug: Failed to Debug Log due to "+x.getClass().getName()+": "+x.getMessage(), x);
 			ExecutionException e = new ExecutionException(x.getMessage());
@@ -65,5 +65,5 @@ public class StartDebug extends AbstractHandler{
 			throw e;
 		}
 		return null;
-	}	
+	}
 }

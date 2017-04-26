@@ -22,15 +22,15 @@ import com.sas.seleniumplus.Activator;
 import com.sas.seleniumplus.projects.BaseProject;
 
 public class TestCase extends AbstractHandler {
-	
+
 	private String projectName = "";
 	String mapPkgName;
-	
+
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		
+
 		String fileName = "";
-		IProgressMonitor monitor = null;				
+		IProgressMonitor monitor = null;
 		final Shell shell = HandlerUtil.getActiveShell(event);
 		IResource resource =Activator.getSelectedResource(null);
 		if(resource == null){
@@ -45,7 +45,7 @@ public class TestCase extends AbstractHandler {
 			MessageDialog.openInformation(shell, "Invalid SeleniumPlus Project",
 					"A SeleniumPlus Project must be selected.");
 			throw new ExecutionException("A SeleniumPlus Project must be selected.");
-		}		
+		}
 		projectName = project.getName();
 		mapPkgName = Map.getMapPackageName(project) + "."+BaseProject.MAPCLASS_FILE;
 
@@ -53,42 +53,42 @@ public class TestCase extends AbstractHandler {
 		Activator.log("Create TestCase user selected resource: "+ resource.getProjectRelativePath().toPortableString());
 		Activator.log("Create TestCase selected project: "+ projectName);
 		Activator.log("Create TestCase project Map: "+ mapPkgName);
-		
+
 		String packageName = Activator.getSelectedSourcePackage(resource);
 		Activator.log("Create TestCase detected Resource packageName: "+ packageName);
-		
+
 		TestCaseWizard dialog = new TestCaseWizard(shell);
-		
+
 		if (packageName != null && packageName.length() > 0 ){
 			dialog.setPackageName(packageName);
 		} else {
 			dialog.setPackageName("default package");
-		}			
-				
-		if (dialog.open() == Window.OK) {			
-			fileName = dialog.getTestClassName();			
+		}
+
+		if (dialog.open() == Window.OK) {
+			fileName = dialog.getTestClassName();
 		} else{
-			Activator.log("Create TestCase dialog may have been cancelled by User.");			
+			Activator.log("Create TestCase dialog may have been cancelled by User.");
 			return null;
 		}
 		Activator.log("Create TestCase class name provided by user: "+ fileName);
-		
+
 		//final String newfilename = fileName.substring(0, 1).toUpperCase() + fileName.substring(1).toLowerCase();
 		final String newfilename = fileName.substring(0, 1).toUpperCase() + fileName.substring(1);
 		Activator.log("Create TestCase modifed for class filename: "+ newfilename);
 
 		final IFile file = resource.getParent().getFile(new Path(resource.getName()+"/"+ newfilename+".java"));
-		
+
 		if (file.exists()) {
  			Activator.log("Create TestCase class '"+ newfilename +"' already exists.");
 			MessageDialog.openInformation(shell, "Info",
 			          "Test Class '"+ newfilename +"' already exists in the package.");
 			return null;
 		}
-		
+
 		try {
 			InputStream stream;
-			
+
 			String check = "."+packageName +".";
 			if (check.contains("."+BaseProject.SRC_TESTRUNS_SUBDIR+".")) {
 				Activator.log("Create TestCase getting file template 'FileTemplates.testRunClass' using: "+ projectName +", "+ packageName +", "+ mapPkgName +", "+ newfilename);
@@ -97,7 +97,7 @@ public class TestCase extends AbstractHandler {
 				Activator.log("Create TestCase getting file template 'FileTemplates.testClass' using: "+ projectName +", "+ packageName +", "+ mapPkgName +", "+ newfilename);
 				stream = FileTemplates.testClass(projectName,packageName,mapPkgName,newfilename);
 			}
-				
+
 			file.create(stream, true, monitor);
 			Activator.log("Create TestCase finished creating file from FileTemplate stream.");
 			stream.close();
@@ -107,7 +107,7 @@ public class TestCase extends AbstractHandler {
                     "TestCase '"+ newfilename +"' may not have successfully been created from FileTemplate.");
 			throw new ExecutionException("TestCase '"+ newfilename +"' may not have successfully been created from FileTemplate.");
 		}
-	
+
 		Activator.log("Create TestCase opening new Editor for newly created testclass '"+newfilename+".java'");
 		shell.getDisplay().asyncExec(new Runnable() {
 			@Override
@@ -122,8 +122,8 @@ public class TestCase extends AbstractHandler {
 		                    "TestCase '"+ newfilename +"' may not have successfully been created from FileTemplate.");
 				}
 			}
-		});	
-		
+		});
+
 		return null;
-	}	
+	}
 }

@@ -84,7 +84,7 @@ public class MapWizard extends Dialog {
 				true);
 		createButton(parent, IDialogConstants.CANCEL_ID,
 				IDialogConstants.CANCEL_LABEL, false);
-		getButton(IDialogConstants.OK_ID).setEnabled(false);	
+		getButton(IDialogConstants.OK_ID).setEnabled(false);
 	}
 
 	@Override
@@ -113,7 +113,7 @@ public class MapWizard extends Dialog {
 		if (testclass.length() == 0) {
 			updateStatus("map name must be specified");
 			return;
-		}		
+		}
 
 		if (testclass.replace('\\', '/').indexOf('/', 1) > 0) {
 			updateStatus("map name must be valid");
@@ -130,7 +130,7 @@ public class MapWizard extends Dialog {
 	}
 
 	private void updateStatus(String string) {
-		if (string != null) {			
+		if (string != null) {
 			lblMessage.setText(string);
 			if (getButton(IDialogConstants.OK_ID) != null){
 				getButton(IDialogConstants.OK_ID).setEnabled(false);

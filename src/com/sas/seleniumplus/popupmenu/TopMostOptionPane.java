@@ -1,4 +1,4 @@
-/** 
+/**
  * Copyright (C) SAS Institute, All rights reserved.
  * General Public License: http://www.opensource.org/licenses/gpl-license.php
  */
@@ -26,7 +26,7 @@ import javax.swing.JOptionPane;
  * <p>
  * Show the dialog on top most level, which means it will be shown before other windows.
  * To achieve this goal, we tried to set the dialog's parent on the top most.
- * If the provided parent is null, then we create a JFrame object as parent 
+ * If the provided parent is null, then we create a JFrame object as parent
  * and bring it to top most before showing dialog; after dialog is closed, we dispose the JFrame.
  * If the provided parent is not null, we will bring it to top most and set it to visible
  * before showing dialog; after dialog is closed, we set back the parent's status.
@@ -37,16 +37,16 @@ import javax.swing.JOptionPane;
  * <li>showInputDialog
  * <li>showConfirmDialog
  * </ul>
- * To implement other showXXXDialog() static method of JOptionPane, please refer to 
+ * To implement other showXXXDialog() static method of JOptionPane, please refer to
  * <ul>
  * <li>{@link #showInputDialog(Component, Object, String, int, Icon, Object[], Object)}
  * <li>{@link #showOptionDialog(Component, Object, String, int, int, Icon, Object[], Object)}
  * </ul>
  */
 public class TopMostOptionPane{
-	
+
 	private static final Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
-	
+
 	/**
 	 * The dialog's Component parent object.
 	 * If it is an instance of Window, it will also be kept in the class field 'window'.
@@ -69,11 +69,11 @@ public class TopMostOptionPane{
 	 * If the dialog's parent is created automatically.
 	 */
 	private boolean weCreatedParent = false;
-	
+
 	private TopMostOptionPane(Component parent){
 		bringDialogParentToTop(parent);
 	}
-	
+
 	/**
 	 * Bring the dialog's parent to the top most level.
 	 * @param parent
@@ -87,7 +87,7 @@ public class TopMostOptionPane{
 			window.setVisible(true);
 			window.setLocation(screen.width/2, screen.height/2);
 			weCreatedParent = true;
-			
+
 		}else{
 			this.parent = parent;
 
@@ -102,7 +102,7 @@ public class TopMostOptionPane{
 			}
 		}
 	}
-	
+
 	/**Set the 'visible' of dialog's parent window to original value */
 	private void resetVisible(){
 		if(window!=null) window.setVisible(originalVisible);
@@ -128,7 +128,7 @@ public class TopMostOptionPane{
 			}
 		}
 	}
-	
+
 	/**
 	 * Show the Input Dialog on top most.<br>
 	 * @see JOptionPane#showInputDialog(Component, Object, String, int, Icon, Object[], Object)
@@ -138,14 +138,14 @@ public class TopMostOptionPane{
             Object[] selectionValues, Object initialSelectionValue)
             throws HeadlessException {
     	Object result = null;
-		
+
 		TopMostOptionPane topPane = new TopMostOptionPane(parentComponent);
 		result = JOptionPane.showInputDialog(topPane.parent, message, title, messageType, icon, selectionValues, initialSelectionValue);
 		topPane.cleanup();
-		
+
 		return result;
     }
-	
+
 	/**
 	 * Show the Option Dialog on top most.<br>
 	 * @see JOptionPane#showOptionDialog(Component, Object, String, int, int, Icon, Object[], Object)
@@ -155,14 +155,14 @@ public class TopMostOptionPane{
 			Icon icon, Object[] options, Object initialValue)
 					throws HeadlessException {
 		int result = JOptionPane.CANCEL_OPTION;
-		
+
 		TopMostOptionPane topPane = new TopMostOptionPane(parentComponent);
 		result = JOptionPane.showOptionDialog(topPane.parent, message, title, optionType, messageType, icon, options, initialValue);
 		topPane.cleanup();
-		
+
 		return result;
 	}
-	
+
 	/**
 	 * @see #showOptionDialog(Component, Object, String, int, int, Icon, Object[], Object)
 	 */
@@ -172,7 +172,7 @@ public class TopMostOptionPane{
 		return showConfirmDialog(parentComponent, message, title, optionType,
 				JOptionPane.QUESTION_MESSAGE);
 	}
-	
+
 	/**
 	 * @see #showOptionDialog(Component, Object, String, int, int, Icon, Object[], Object)
 	 */
@@ -192,9 +192,9 @@ public class TopMostOptionPane{
 		return showOptionDialog(parentComponent, message, title, optionType,
 				messageType, icon, null, null);
 	}
-	
+
 	/**
-	 * Directly change the JDialog's behavior to show on top. 
+	 * Directly change the JDialog's behavior to show on top.
 	 */
 	private static void test_bring_dialog_to_top(){
 		String msg = "Hi loooo  ... ";
@@ -208,7 +208,7 @@ public class TopMostOptionPane{
 		dialog.setAlwaysOnTop(originalAlwaysOnTop);
 		dialog.dispose();
 	}
-	
+
 	/**
 	 * Test
 	 * <ul>
@@ -219,7 +219,7 @@ public class TopMostOptionPane{
 	private static void test_bring_parent_to_top(){
 		String msg = "Hi loooo  ... ";
 		String title = "Testing Dialog shown as top most.";
-		
+
 		//The dialog will be shown at the center of the screen
 		TopMostOptionPane.showConfirmDialog(null, msg, title, JOptionPane.CLOSED_OPTION);
 
@@ -229,10 +229,10 @@ public class TopMostOptionPane{
 		TopMostOptionPane.showOptionDialog(parent, msg, title, JOptionPane.YES_NO_CANCEL_OPTION, JOptionPane.QUESTION_MESSAGE, null, null, null);
 		parent.dispose();
 	}
-	
+
 	public static void main(String[] args){
 		test_bring_dialog_to_top();
-		
+
 		test_bring_parent_to_top();
 	}
 }

@@ -37,38 +37,38 @@ public class Map extends AbstractHandler{
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		
+
 		String fileName = "";
 		String packageName = "";
-		IProgressMonitor monitor = null;				
-		Shell shell = HandlerUtil.getActiveShell(event);		
+		IProgressMonitor monitor = null;
+		Shell shell = HandlerUtil.getActiveShell(event);
 		MapWizard dialog = new MapWizard(shell);
-	
+
 		IWorkspaceRoot root = ResourcesPlugin.getWorkspace().getRoot();
-		
+
 		ISelection iSelection = Activator.getDefault().getWorkbench()
 				.getActiveWorkbenchWindow().getSelectionService().getSelection();
-				
+
 		Object o = ((IStructuredSelection) iSelection).getFirstElement();
-		
-		IPath loc =  ((Folder) o).getFullPath(); 
-		
+
+		IPath loc =  ((Folder) o).getFullPath();
+
 		IResource resource = root.findMember(loc);
-		
+
 		IContainer container = (IContainer) resource;
-		
+
 		packageName = container.getFullPath().toOSString();
-		
+
 		dialog.setPackageName(packageName);
-		
-		if (dialog.open() == Window.OK) {			
-			fileName = dialog.getTestClassName();			
+
+		if (dialog.open() == Window.OK) {
+			fileName = dialog.getTestClassName();
 		} else{
 			return null;
 		}
-		
+
 		//String newfilename = fileName.substring(0, 1).toUpperCase() + fileName.substring(1).toLowerCase();
-		
+
 		final IFile file = container.getFile(new Path(fileName + ".map"));
 		try {
 			InputStream stream = FileTemplates.appMap();
@@ -81,7 +81,7 @@ public class Map extends AbstractHandler{
 			stream.close();
 		} catch (Exception e) {
 		}
-	
+
 		shell.getDisplay().asyncExec(new Runnable() {
 			@Override
 			public void run() {
@@ -92,15 +92,15 @@ public class Map extends AbstractHandler{
 				} catch (PartInitException e) {
 				}
 			}
-		});	
-		
+		});
+
 		return null;
 	}
-	
+
 	/**
 	 * Returns the dot-separated package name of the package expected to hold the Map file.
 	 * <p>
-	 * This is normally the package name (whereever it is in the path) that is the lower-case 
+	 * This is normally the package name (whereever it is in the path) that is the lower-case
 	 * equivalent of the Project name.
 	 * <p>
 	 * Example:
@@ -117,10 +117,10 @@ public class Map extends AbstractHandler{
 	public static String getMapPackageName(IProject iproject){
 		 IJavaProject javaProject = JavaCore.create(iproject);
 		 String packageTest = iproject.getName().toLowerCase();
-		 //Activator.log("Map.getMapPackageName using packageTest value:"+ packageTest);		 
+		 //Activator.log("Map.getMapPackageName using packageTest value:"+ packageTest);
 		 String rootName = null;
 		 try {
-			for (IPackageFragment root : javaProject.getPackageFragments()) {					
+			for (IPackageFragment root : javaProject.getPackageFragments()) {
 				 if (root.getKind() == IPackageFragmentRoot.K_SOURCE) {
 					 rootName = root.getElementName();
 					 //Activator.log("Map.getMapPackageName evaluating: "+ root.getElementName());
@@ -128,10 +128,10 @@ public class Map extends AbstractHandler{
 						 //Activator.log("Map.getMapPackageName matched on: "+ rootName);
 						 return rootName;
 					 }
-				 }			 
+				 }
 			 }
 		} catch (JavaModelException e) {
-		}	
+		}
 		return null;
 	}
 

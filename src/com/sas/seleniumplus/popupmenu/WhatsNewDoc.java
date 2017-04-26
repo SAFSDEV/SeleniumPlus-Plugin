@@ -12,17 +12,16 @@ import com.sas.seleniumplus.Activator;
 
 public class WhatsNewDoc extends AbstractHandler{
 
-	
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-	
+
 		try {
-			PlatformUI.getWorkbench().getBrowserSupport().createBrowser("WhatsNewDoc").openURL(new URL("http://safsdev.sourceforge.net/WhatsNewInSAFS.htm"));		
+			PlatformUI.getWorkbench().getBrowserSupport().createBrowser("WhatsNewDoc").openURL(new URL("http://safsdev.sourceforge.net/WhatsNewInSAFS.htm"));
 		} catch (Exception e) {
 			Activator.log("Action failed to execute "+ e.getMessage(), e);
 		}
-		
+
 		return null;
-	}	
+	}
 
 }

@@ -24,12 +24,12 @@ public class StartServer extends AbstractHandler{
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 
 		String seleniumdir = System.getenv(BaseProject.SELENIUM_PLUS_ENV);
-		
+
 		if(seleniumdir == null || seleniumdir.length()==0){
 			Activator.log("StartServer cannot deduce SELENIUM_PLUS Environment Variable/Installation Directory.");
 			throw new ExecutionException("StartServer cannot deduce SELENIUM_PLUS Environment Variable/Installation Directory.");
 		}
-		
+
 		File rootdir = new CaseInsensitiveFile(seleniumdir).toFile();
 		if(!rootdir.isDirectory()){
 			Activator.log("StartServer cannot deduce SELENIUM_PLUS install directory at: "+rootdir.getAbsolutePath());
@@ -41,11 +41,11 @@ public class StartServer extends AbstractHandler{
 			Activator.log("StartServer cannot deduce SELENIUM_PLUS/extra directory at: "+extradir.getAbsolutePath());
 			throw new ExecutionException("StartServer cannot deduce SELENIUM_PLUS/extra  directory at: "+extradir.getAbsolutePath());
 		}
-		
+
 		String javaexe = "java";
-		File javadir = new CaseInsensitiveFile(rootdir, "Java64/jre/bin").toFile();		
+		File javadir = new CaseInsensitiveFile(rootdir, "Java64/jre/bin").toFile();
 		if(javadir.isDirectory()) javaexe = javadir.getAbsolutePath()+"/java";
-		
+
 		File libsdir = new CaseInsensitiveFile(rootdir, "libs").toFile();
 		if(!libsdir.isDirectory()){
 			Activator.log("StartServer cannot deduce valid SELENIUM_PLUS/libs directory at: "+libsdir.getAbsolutePath());
@@ -54,9 +54,9 @@ public class StartServer extends AbstractHandler{
 		File[] files = libsdir.listFiles(new FilenameFilter(){ public boolean accept(File dir, String name){
 			try{ return name.toLowerCase().startsWith("selenium-server-standalone");}catch(Exception x){ return false;}
 		}});
-		
+
 		File jarfile = null;
-		
+
 		if(files.length ==0){
 			Activator.log("StartServer cannot deduce SELENIUM_PLUS selenium-server-standalone* JAR file in /libs directory.");
 			throw new ExecutionException("StartServer cannot deduce SELENIUM_PLUS selenium-server-standalone* JAR file in /libs directory.");
@@ -75,11 +75,11 @@ public class StartServer extends AbstractHandler{
 		}
 		// we are now set with a remote server jarfile
 		Activator.log("StartServer using selenium server jarfile '"+ jarfile.getAbsolutePath()+"'");
-		
+
 		String consoledir = null;
 		IProject iproject = Activator.getSelectedProject(null);
 		if(iproject == null){
-			JOptionPane.showConfirmDialog(null, "A SeleniumPlus Project must be selected.", 
+			JOptionPane.showConfirmDialog(null, "A SeleniumPlus Project must be selected.",
 					                            "Invalid Project", JOptionPane.OK_OPTION);
 			throw new ExecutionException("A SeleniumPlus Project must be selected.");
 		}
@@ -94,7 +94,7 @@ public class StartServer extends AbstractHandler{
 		File chromedriver = new CaseInsensitiveFile(rootdir, "/extra/chromedriver.exe").toFile();
 		if(!chromedriver.isFile()) chromedriver = new CaseInsensitiveFile(rootdir, "/extra/chromedriver").toFile();
 		File iedriver = new CaseInsensitiveFile(rootdir, "/extra/IEDriverServer.exe").toFile();
-				
+
 		try{
 			IJavaProject jproject = JavaCore.create(iproject);
 			String[] jars = JavaRuntime.computeDefaultRuntimeClassPath(jproject);
@@ -104,7 +104,7 @@ public class StartServer extends AbstractHandler{
 			}
 			if(cp.contains(" ")) cp ="\""+ cp + "\"";
 			cp = " -cp "+ cp;
-			
+
 			String cmdline = javaexe + " -Xms512m -Xmx2g " + cp +" org.safs.selenium.util.SeleniumServerRunner "+
 						     "-jar "+ jarfile.getAbsolutePath() +
 					         " -Dwebdriver.log.file=\""+consoledir+"/webdriver.console\""+
@@ -116,9 +116,9 @@ public class StartServer extends AbstractHandler{
 
 			if(chromedriver.isFile()) cmdline += " -Dwebdriver.chrome.driver=\""+ chromedriver.getAbsolutePath() +"\"";
 			if(iedriver.isFile()) cmdline += " -Dwebdriver.ie.driver=\""+ iedriver.getAbsolutePath() +"\"";
-			
+
 			cmdline += " -timeout=20 -browserTimeout=60";
-			
+
 			Activator.log("StartServer launching Selenium Server with cmdline: "+ cmdline);
 			new Process2(Runtime.getRuntime().exec(cmdline), true).discardStderr().discardStdout();
 		}catch(Exception x){
@@ -128,22 +128,22 @@ public class StartServer extends AbstractHandler{
 			throw e;
 		}
 		return null;
-		
+
 //		String selenv = System.getenv(BaseProject.SELENIUM_PLUS_ENV);
-//		
-//		// FIXED Above? Need to support Unix/Linux/Mac 
+//
+//		// FIXED Above? Need to support Unix/Linux/Mac
 //		boolean isWin = true;
 //		if(isWin){
 //			try {
-//				Runtime.getRuntime().exec("cmd.exe /c start "+selenv+"/extra/RemoteServer.bat");			
+//				Runtime.getRuntime().exec("cmd.exe /c start "+selenv+"/extra/RemoteServer.bat");
 //			} catch (Exception e) {
 //				System.out.println("RemoteServer failed to execute "+ e.getMessage());
 //			}
 //		}else{
 //			System.out.println("RemoteServer only valid on Windows OS at this time.");
 //		}
-//		
+//
 //		return null;
-	}	
+	}
 
 }

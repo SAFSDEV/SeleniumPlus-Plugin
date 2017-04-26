@@ -59,8 +59,7 @@ public class SampleProjectPageWizard extends WizardPage {
 
     // widgets
     Text projectNameField;
-    
-       
+
 	private ProjectContentsLocationArea locationArea;
 
 	private WorkingSetGroup workingSetGroup;
@@ -80,7 +79,7 @@ public class SampleProjectPageWizard extends WizardPage {
      */
     public void createControl(Composite parent) {
         Composite composite = new Composite(parent, SWT.NULL);
-    
+
 
         initializeDialogUnits(parent);
 
@@ -95,10 +94,10 @@ public class SampleProjectPageWizard extends WizardPage {
         if(initialProjectFieldValue != null) {
 			locationArea.updateProjectName(initialProjectFieldValue);
 		}
-        
+
 		// Scale the button based on the rest of the dialog
 		setButtonLayoutData(locationArea.getBrowseButton());
-		
+
         setPageComplete(validatePage());
         // Show description on opening
         setErrorMessage(null);
@@ -106,11 +105,11 @@ public class SampleProjectPageWizard extends WizardPage {
         setControl(composite);
         Dialog.applyDialogFont(composite);
     }
-    
+
     /**
 	 * Create a working set group for this page. This method can only be called
 	 * once.
-	 * 
+	 *
 	 * @param composite
 	 *            the composite in which to create the group
 	 * @param selection
@@ -130,7 +129,7 @@ public class SampleProjectPageWizard extends WizardPage {
 				supportedWorkingSetTypes);
 		return workingSetGroup;
 	}
-    
+
     /**
 	 * Get an error reporter for the receiver.
 	 * @return IErrorMessageReporter
@@ -151,7 +150,7 @@ public class SampleProjectPageWizard extends WizardPage {
 				if(valid) {
 					valid = validatePage();
 				}
-				
+
 				setPageComplete(valid);
 			}
 		};
@@ -159,7 +158,7 @@ public class SampleProjectPageWizard extends WizardPage {
 
 
     /**
-     * Returns the current project location path as entered by 
+     * Returns the current project location path as entered by
      * the user, or its anticipated initial value.
      * Note that if the default has been returned the path
      * in a project description used to create a project
@@ -170,10 +169,10 @@ public class SampleProjectPageWizard extends WizardPage {
     public IPath getLocationPath() {
         return new Path(locationArea.getProjectLocation());
     }
-    
+
     /**
     /**
-     * Returns the current project location URI as entered by 
+     * Returns the current project location URI as entered by
      * the user, or <code>null</code> if a valid project location
      * has not been entered.
      *
@@ -192,7 +191,7 @@ public class SampleProjectPageWizard extends WizardPage {
 	 * responsibility of <code>IProject::create</code> invoked by the new
 	 * project resource wizard.
 	 * </p>
-	 * 
+	 *
 	 * @return the new project resource handle
 	 */
     public IProject getProjectHandle() {
@@ -214,11 +213,11 @@ public class SampleProjectPageWizard extends WizardPage {
 
         return getProjectNameFieldValue();
     }
-    
+
     /**
      * Returns the value of the project name field
      * with leading and trailing spaces removed.
-     * 
+     *
      * @return the project name in the field
      */
     private String getProjectNameFieldValue() {
@@ -228,22 +227,22 @@ public class SampleProjectPageWizard extends WizardPage {
 
         return projectNameField.getText().trim();
     }
-    
-   
+
+
     /**
      * Sets the initial project name that this page will use when
      * created. The name is ignored if the createControl(Composite)
      * method has already been called. Leading and trailing spaces
      * in the name are ignored.
-     * Providing the name of an existing project will not necessarily 
-     * cause the wizard to warn the user.  Callers of this method 
-     * should first check if the project name passed already exists 
+     * Providing the name of an existing project will not necessarily
+     * cause the wizard to warn the user.  Callers of this method
+     * should first check if the project name passed already exists
      * in the workspace.
-     * 
+     *
      * @param name initial project name for this page
-     * 
+     *
      * @see IWorkspace#validateName(String, int)
-     * 
+     *
      */
     public void setInitialProjectName(String name) {
         if (name == null) {
@@ -263,32 +262,32 @@ public class SampleProjectPageWizard extends WizardPage {
     	locationArea.updateProjectName(getProjectNameFieldValue());
     }
 
-  
+
     /**
-     * Returns whether this page's controls currently all contain valid 
+     * Returns whether this page's controls currently all contain valid
      * values.
      *
      * @return <code>true</code> if all controls are valid, and
      *   <code>false</code> if at least one is invalid
      */
     protected boolean validatePage() {
-        
+
         IProject handle = getProjectHandle();
         if (handle.exists()) {
             setErrorMessage(IDEWorkbenchMessages.WizardNewProjectCreationPage_projectExistsMessage);
             return false;
         }
-                
+
         IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(
 				getProjectNameFieldValue());
 		locationArea.setExistingProject(project);
-		
+
 		String validLocationMessage = locationArea.checkValidLocation();
 		if (validLocationMessage != null) { // there is no destination location given
 			setErrorMessage(validLocationMessage);
 			return false;
-		}       
-		
+		}
+
         setErrorMessage(null);
         setMessage(null);
         return true;
@@ -305,7 +304,7 @@ public class SampleProjectPageWizard extends WizardPage {
     /**
 	 * Return the selected working sets, if any. If this page is not configured
 	 * to interact with working sets this will be an empty array.
-	 * 
+	 *
 	 * @return the selected working sets
 	 * @since 3.4
 	 */
