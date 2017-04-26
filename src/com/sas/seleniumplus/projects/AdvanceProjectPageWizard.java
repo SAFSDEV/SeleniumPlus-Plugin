@@ -58,6 +58,7 @@ import org.eclipse.ui.internal.ide.dialogs.ProjectContentsLocationArea.IErrorMes
  * </pre>
  * </p>
  */
+@SuppressWarnings("restriction")
 public class AdvanceProjectPageWizard extends WizardPage {
 
     // initial value stores

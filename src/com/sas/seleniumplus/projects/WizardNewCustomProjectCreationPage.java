@@ -62,6 +62,7 @@ import org.eclipse.ui.internal.ide.dialogs.ProjectContentsLocationArea.IErrorMes
  * </pre>
  * </p>
  */
+@SuppressWarnings("restriction")
 public class WizardNewCustomProjectCreationPage extends WizardPage {
     // initial value stores
     private String initialProjectFieldValue;
