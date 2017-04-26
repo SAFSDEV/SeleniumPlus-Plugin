@@ -2,13 +2,15 @@ package com.sas.seleniumplus;
 /**
  * APR 25, 2017	(SBJLWA) Moved a lot of methods from UpdateSeleniumPlus.java
  *                       Moved this class from package com.sas.seleniumplus.popupmenu
- *
+ * APR 26, 2017	(SBJLWA) Modified getLatestSeleniumPlusJARS(): Use JSTAF.jar if JSTAFEmbedded.jar doesn't exist.
  */
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.nio.file.FileSystems;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -127,41 +129,82 @@ public class CommonLib {
 	}
 
 	/**
+	 *
 	 * @return An array of SeleniumPlus specific JAR files we wish to make sure are in the Project's Classpath.
 	 * <p>
 	 * Currently that is the selenium standalone server JAR, seleniumplus JAR, and JSTAFEmbedded JAR.
+	 * Meanwhile, we try to attach source code and javadoc to seleniumplus.jar, if the source code doesn't exist
+	 * then we try to download it.
 	 * @throws ExecutionException
 	 */
 	public static IClasspathEntry[] getLatestSeleniumPlusJARS() throws ExecutionException{
 		IPath path = null;
 		IPath sourcepath = null;
 
-		//selenium-server-standalone.jar
+		//1. selenium-server-standalone.jar
 		File seleniumjar = getLatestSeleniumServerJARFile();
 		path = new Path(Activator.SELENIUMPLUS_HOME + "/"+DIR_LIBS+"/" + seleniumjar.getName());
 		IClasspathEntry selenium_server_jar = JavaCore.newVariableEntry(path, null, null);
 
-		//seleniumplus.jar, attache "javadoc" and "source code"
+		//2. seleniumplus.jar, attache "javadoc" and "source code"
 		IClasspathAttribute[] attrs = null;
 		IPreferenceStore store = Activator.getDefault().getPreferenceStore();
 		if(store.getBoolean(PreferenceConstants.BOOLEAN_VALUE_JAVADOC)){
 			String javadocURL = store.getString(PreferenceConstants.UPDATESITE_JAVADOC_URL);
-			attrs = new  IClasspathAttribute[]{
-				JavaCore.newClasspathAttribute(IClasspathAttribute.JAVADOC_LOCATION_ATTRIBUTE_NAME, javadocURL)
-			};
+			if(isValidJavaDocPath(javadocURL)){
+				attrs = new  IClasspathAttribute[]{
+						JavaCore.newClasspathAttribute(IClasspathAttribute.JAVADOC_LOCATION_ATTRIBUTE_NAME, javadocURL)
+				};
+			}else{
+				Activator.error("Failed to attach javadoc for Classpath Entry '"+BaseProject.SELENIUMPLUS_JAR+"', '"+javadocURL+"' is NOT valid!");
+			}
 		}
 		if(store.getBoolean(PreferenceConstants.BOOLEAN_VALUE_SOURCE_CODE)){
-			sourcepath = new Path(Activator.SELENIUMPLUS_HOME + "/"+DIR_SOURCE+"/"+ BaseProject.SAFSSELENIUM_PLUS_SOURCE_CORE);
+			String sourceZipFile = Activator.seleniumhome+File.separator+DIR_SOURCE+File.separator+ BaseProject.SAFSSELENIUM_PLUS_SOURCE_CORE;
+			if(!fileExist(sourceZipFile)){
+				try {
+					int updatedFileNumber = CommonLib.updateSource(Activator.seleniumhome, CommonLib.getUpdateTimeout());
+					Activator.log("Updated "+updatedFileNumber+" source files.");
+				} catch (Exception e) {
+					Activator.warn("Failed to update source code! Due to "+e.toString());
+				}
+			}
+			if(fileExist(sourceZipFile)){
+				sourcepath = new Path(Activator.SELENIUMPLUS_HOME + "/"+DIR_SOURCE+"/"+ BaseProject.SAFSSELENIUM_PLUS_SOURCE_CORE);
+			}else{
+				Activator.error("Failed to attach source for Classpath Entry '"+BaseProject.SELENIUMPLUS_JAR+"', '"+sourceZipFile+"' does NOT exist!");
+			}
 		}
 
 		path = new Path(Activator.SELENIUMPLUS_HOME + "/"+DIR_LIBS+"/"+ BaseProject.SELENIUMPLUS_JAR);
 		IClasspathEntry seleniumplus_jar = JavaCore.newVariableEntry(path, sourcepath, null, null, attrs, false);
 
-		//JSTAFEmbedded.jar
-		path = new Path(Activator.SELENIUMPLUS_HOME + "/"+DIR_LIBS+"/"+ BaseProject.JSTAF_EMBEDDDED_JAR);
-		IClasspathEntry jstaf_embedded_jar = JavaCore.newVariableEntry(path, null, null);
+		//3. JSTAFEmbedded.jar or JSTAF.jar, we prefer JSTAFEmbedded.jar
+		IClasspathEntry jstafJAR = null;
+		try{
+			String embeddedjarFile = Activator.seleniumhome+File.separator+DIR_LIBS+File.separator+ BaseProject.JSTAF_EMBEDDDED_JAR;
+			if(fileExist(embeddedjarFile)){
+				path = new Path(Activator.SELENIUMPLUS_HOME + "/"+DIR_LIBS+"/"+ BaseProject.JSTAF_EMBEDDDED_JAR);
+				jstafJAR = JavaCore.newVariableEntry(path, null, null);
+			}else{
+				Activator.warn("Failed to create Classpath Entry for '"+BaseProject.JSTAF_EMBEDDDED_JAR+"', due to '"+embeddedjarFile+"' does NOT exist!");
+			}
+		}catch(Exception e){
+			Activator.warn("Failed to create Classpath Entry for '"+BaseProject.JSTAF_EMBEDDDED_JAR+"', due to "+e.toString());
+		}
+		if(jstafJAR==null){
+			try{
+				if(BaseProject.STAFDIR==null){
+					BaseProject.STAFDIR = System.getenv(BaseProject.STAFDIR_ENV);
+				}
+				path = new Path(BaseProject.STAFDIR + BaseProject.STAF_JAR_PATH);
+				jstafJAR = JavaCore.newLibraryEntry(path, null, null);
+			}catch(Exception e){
+				Activator.error("Failed to create Classpath Entry for '"+BaseProject.STAF_JAR+"', due to "+e.toString());
+			}
+		}
 
-		return new IClasspathEntry[]{seleniumplus_jar, jstaf_embedded_jar, selenium_server_jar};
+		return new IClasspathEntry[]{seleniumplus_jar, jstafJAR, selenium_server_jar};
 	}
 
 	/**
@@ -398,8 +441,8 @@ public class CommonLib {
 			+ BaseProject.JSTAF_EMBEDDDED_JAR + "\n\n"
 			+ jmsg;
 
-		TopMostOptionPane.showConfirmDialog(null, msg,
-				"Build path updated..", JOptionPane.CLOSED_OPTION);
+		TopMostOptionPane.showConfirmDialog(null, msg, "Build path updated..", JOptionPane.CLOSED_OPTION);
+
 	}
 
 	public static Shell getShell(){
@@ -546,10 +589,6 @@ public class CommonLib {
 		String url = getPreferenceStore().getString(PreferenceConstants.UPDATESITE_PLUGIN_URL);
 		url = url==null ? null: url.trim();
 
-		Shell shell = getShell();
-
-		if(! shell.getMinimized()) shell.setMinimized(true);
-
 		int plugin_update = update(false, false, "SeleniumPlus Plugin Update", url, destdir, timeout);
 
 		if (plugin_update > 0) {
@@ -557,8 +596,8 @@ public class CommonLib {
 					"Refresh Now",
 					"I will do it Later"
 			};
-			int selected = TopMostOptionPane.showOptionDialog(null,
-					"SeleniumPlus PlugIn was Updated.\n"+
+			int option = TopMostOptionPane.showOptionDialog(null,
+							"SeleniumPlus PlugIn was Updated.\n"+
 							"Eclipse Workspace will need to be refreshed.\n\n"+
 							"Refresh Now? Or do it yourself Later.",
 							"Update Requires Refresh",
@@ -567,9 +606,8 @@ public class CommonLib {
 							null,
 							options,
 							options[0]);
-			if(shell.getMinimized()) shell.setMinimized(false);
 
-			if(JOptionPane.YES_OPTION == selected){
+			if(JOptionPane.YES_OPTION == option){
 				PlatformUI.getWorkbench().restart();
 			}
 		}
@@ -615,6 +653,8 @@ public class CommonLib {
 		}else{
 			Activator.log(title+" DID NOT exit normally.");
 		}
+
+		if(shell.getMinimized()) shell.setMinimized(false);
 
 		return updateResult;
 	}
@@ -707,12 +747,21 @@ public class CommonLib {
 	}
 
 	private static boolean isAlive(Process p){
-
 		try {
 			p.exitValue();
 			return false;
 		} catch (IllegalThreadStateException  e) {
 			return true;
 		}
+	}
+
+	private static boolean fileExist(String filename){
+		return Files.exists(FileSystems.getDefault().getPath(filename)) ||
+			   new File(filename).exists();
+	}
+	private static boolean isValidJavaDocPath(String javaDocPath){
+		if(javaDocPath==null || javaDocPath.isEmpty()) return false;
+		//Check valid javadoc path, such as url, zip file etc.
+		return true;
 	}
 }

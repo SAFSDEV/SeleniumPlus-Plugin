@@ -1,10 +1,12 @@
 package com.sas.seleniumplus.projects;
-
+/**
+ * APR 26, 2017	(SBJLWA) Modified createBaseProject(): Use CommonLib.getLatestSeleniumPlusJARS().
+ */
 import java.io.File;
-import java.io.FilenameFilter;
 import java.io.InputStream;
 import java.net.URI;
 
+import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.ICommand;
 import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
@@ -22,9 +24,9 @@ import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.launching.JavaRuntime;
-import org.safs.tools.CaseInsensitiveFile;
 
 import com.sas.seleniumplus.Activator;
+import com.sas.seleniumplus.CommonLib;
 import com.sas.seleniumplus.builders.AppMapBuilder;
 import com.sas.seleniumplus.natures.ProjectNature;
 import com.sas.seleniumplus.popupmenu.FileTemplates;
@@ -210,8 +212,7 @@ public class BaseProject {
 	 */
 	private static IProject createBaseProject(String projectName, String sourceDirName, URI location) {
 
-		IProject newProject = ResourcesPlugin.getWorkspace().getRoot()
-				.getProject(projectName);
+		IProject newProject = ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
 
 		if (!newProject.exists()) {
 			URI projectLocation = location;
@@ -232,7 +233,6 @@ public class BaseProject {
 			desc.setLocationURI(projectLocation);
 
 			try {
-
 				newProject.create(desc, null);
 				if (!newProject.isOpen()) {
 					newProject.open(null);
@@ -240,41 +240,30 @@ public class BaseProject {
 				IFolder srcFolder = newProject.getFolder(sourceDirName);
 
 				IJavaProject javaProject = JavaCore.create(newProject);
-				org.eclipse.jdt.core.IClasspathEntry src = JavaCore
-						.newSourceEntry(srcFolder.getFullPath());
-				IClasspathEntry jre = JavaCore.newContainerEntry(new Path(
-						JavaRuntime.JRE_CONTAINER), new IAccessRule[0],
-						new IClasspathAttribute[] { JavaCore
-								.newClasspathAttribute("owner.project.facets",
-										"java") }, false);
+				org.eclipse.jdt.core.IClasspathEntry src = JavaCore.newSourceEntry(srcFolder.getFullPath());
+				IClasspathEntry jre = JavaCore.newContainerEntry(
+						new Path(JavaRuntime.JRE_CONTAINER),
+						new IAccessRule[0],
+						new IClasspathAttribute[] { JavaCore.newClasspathAttribute("owner.project.facets","java") },
+						false);
 				IClasspathEntry[] entries = new IClasspathEntry[] { src, jre };
 
 				if (SELENIUM_PLUS != null) {
-					IClasspathEntry seleniumjar = JavaCore.newVariableEntry(new Path(Activator.SELENIUMPLUS_HOME + SELENIUMPLUS_JAR_PATH), null, null);
-					IClasspathEntry seleniumServerjar = JavaCore.newVariableEntry(new Path(Activator.SELENIUMPLUS_HOME + "/libs/" + findLatestJar().getName()), null, null);
-					IClasspathEntry stafjar = null;
-					IClasspathEntry nostafjar = null;
-
-					try{ stafjar = JavaCore.newLibraryEntry(
-							new Path(STAFDIR + STAF_JAR_PATH), null, null);}
-					catch(Exception x){}
-
-					try{ nostafjar = JavaCore.newVariableEntry(
-							new Path(Activator.SELENIUMPLUS_HOME + NOSTAF_JAR_PATH), null, null);}
-					catch(Exception x){}
-					entries = null;
-					if(nostafjar == null){
-						entries = new IClasspathEntry[] { src, jre, seleniumjar, seleniumServerjar, stafjar };
-					}else{
-						entries = new IClasspathEntry[] { src, jre, seleniumjar, seleniumServerjar, nostafjar };
+					try {
+						IClasspathEntry[] seplusEntries = CommonLib.getLatestSeleniumPlusJARS();
+						IClasspathEntry[] totalEntries = new IClasspathEntry[entries.length+seplusEntries.length];
+						System.arraycopy(entries, 0, totalEntries, 0, entries.length);
+						System.arraycopy(seplusEntries, 0, totalEntries, entries.length, seplusEntries.length);
+						entries = totalEntries;
+					} catch (ExecutionException e) {
+						Activator.warn("Failed to append SeleniumPlus specific Classpath Entries, the proejct '"+projectName+"' risks failing to build. Due to "+e.toString());
 					}
 				}
 
-				javaProject.setRawClasspath(entries, newProject.getFullPath()
-						.append("bin"), new NullProgressMonitor());
+				javaProject.setRawClasspath(entries, newProject.getFullPath().append("bin"), new NullProgressMonitor());
 
 			} catch (CoreException e) {
-				e.printStackTrace();
+				Activator.error("Failed to create SeleniumPlus project '"+projectName+"', due to "+e.toString());
 			}
 
 		}
@@ -451,33 +440,6 @@ public class BaseProject {
 			description.setNatureIds(newNatures);
 			project.setDescription(description, null);
 		}
-	}
-
-	private static File findLatestJar(){
-
-		File rootdir = new CaseInsensitiveFile(SELENIUM_PLUS).toFile();
-		File libsdir = new CaseInsensitiveFile(rootdir, "libs").toFile();
-
-		File[] files = libsdir.listFiles(new FilenameFilter(){ public boolean accept(File dir, String name){
-			try{ return name.toLowerCase().startsWith(SELENIUM_SERVER_JAR_PART_NAME);}catch(Exception x){ return false;}
-		}});
-
-		File jarfile = null;
-
-		// if more than one, find the latest
-		if(files.length > 1){
-			long diftime = 0;
-			for(File afile: files){
-				if(afile.lastModified() > diftime){
-					diftime = afile.lastModified();
-					jarfile = afile;
-				}
-			}
-		}else{
-			jarfile = files[0];
-		}
-
-		return jarfile;
 	}
 
 }
