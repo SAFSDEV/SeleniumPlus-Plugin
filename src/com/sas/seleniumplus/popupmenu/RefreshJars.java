@@ -1,8 +1,5 @@
 package com.sas.seleniumplus.popupmenu;
 
-import java.io.IOException;
-import java.net.URISyntaxException;
-
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
@@ -16,7 +13,7 @@ public class RefreshJars extends AbstractHandler {
 		try {
 			int updatedFileNumber = CommonLib.updateSource(Activator.seleniumhome, CommonLib.getUpdateTimeout());
 			Activator.log("Updated "+updatedFileNumber+" source files.");
-		} catch (URISyntaxException | IOException e) {
+		} catch (Exception e) {
 			Activator.warn("Failed to update source code!");
 		}
 		CommonLib.refreshBuildPath();
