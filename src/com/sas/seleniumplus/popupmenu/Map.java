@@ -33,6 +33,7 @@ import org.eclipse.ui.ide.IDE;
 
 import com.sas.seleniumplus.Activator;
 
+@SuppressWarnings("restriction")
 public class Map extends AbstractHandler{
 
 	@Override

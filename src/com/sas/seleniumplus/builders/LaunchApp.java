@@ -19,6 +19,7 @@ import org.eclipse.ui.IEditorPart;
 import com.sas.seleniumplus.Activator;
 import com.sas.seleniumplus.projects.BaseProject;
 
+@SuppressWarnings("restriction")
 public class LaunchApp implements ILaunchShortcut  {
 
 	@Override
