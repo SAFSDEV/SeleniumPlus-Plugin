@@ -323,7 +323,7 @@ public class BaseProject {
 			}
 
 			testclass.create(testclassstream, true, null);
-			testclassstream.close();
+			if (testclassstream != null) testclassstream.close();
 		}
 
 
@@ -351,7 +351,7 @@ public class BaseProject {
 			}
 
 			testruns.create(testrunstream, true, null);
-			testrunstream.close();
+			if (testrunstream != null) testrunstream.close();
 		}
 
 
