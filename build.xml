@@ -23,6 +23,8 @@ as the working directory.
 	<property name="eclipsePlugins" value="${ECLIPSEJARS}"/>
 	
 	<property name="buildDirectory" value="${basedir}/bin"/>
+	<property name="testBuildDirectory" value="${basedir}/testBuild"/>
+	<property name="testClassesDir" value="${testBuildDirectory}/classes" />
 	<property name="p2.build.repo" value="file:${buildDirectory}/buildRepo"/>
 	<property name="basews" value="${ws}"/>
 	<property name="baseos" value="${os}"/>
@@ -308,11 +310,74 @@ as the working directory.
 		</copy>
 	</target>
 
+	<target name="build.jars.and.test" depends="build.jars, test" />
+
 	<target name="build.jars" depends="init, clean" description="Compile classes and build nested jars for the plug-in: Seleniumplus_plugin.">
 		<delete file="${compilation.problem.marker}" quiet="true"/>
 		<available property="@dot" file="${build.result.folder}/@dot"/>
 		<antcall target="@dot"/>
 	</target>
+
+	<target name="init.groovy">
+		<path id="groovy.classpath">
+			<fileset dir="${SAFSJARS}/../libs/groovy">
+				<include name="groovy*.jar" />
+			</fileset>
+		</path>
+		<property name="groovy.classpath" refid="groovy.classpath" />
+
+		<taskdef name="groovy" classname="org.codehaus.groovy.ant.Groovy" classpath="${groovy.classpath}" />
+	</target>
+
+	<target name="test.classpath" depends="init.groovy,@dot.init">
+		<groovy>
+			ant.path(id:"test.classpath") {
+				// this project's compiled classes
+				pathelement(location:'${build.result.folder}/@dot')
+
+				path(refid:'@dot.classpath')
+				path(refid:'groovy.classpath')
+
+				// junit from the Eclipse jars is used just because it is available.
+				pathelement(path:'${eclipsePlugins}/org.junit_4.11.0.v201303080030/junit.jar')
+				// junit depends on hamcrest
+				pathelement(path:'${eclipsePlugins}/org.hamcrest.core_1.3.0.v201303031735.jar')
+			}
+			ant.property(name:'test.classpath', refid:'test.classpath')
+		</groovy>
+	</target>
+
+	<!--
+	All of this project's code is compiled.
+
+	This target can be run with Ant as opposed to the Eclipse AntRunner application.
+	-->
+	<target name="test.compile" depends="@dot,test.compile.only"/>
+
+	<!--
+	Only the test code is compiled.
+	This target can be run with Ant as opposed to the Eclipse AntRunner application.
+	-->
+	<target name="test.compile.only" depends="init.groovy,test.classpath">
+		<groovy>
+			ant.mkdir(dir:'${testClassesDir}')
+			ant.mkdir(dir:'test/groovy')
+			ant.typedef(name:'groovyc', classname:'org.codehaus.groovy.ant.Groovyc', classpath:'${test.classpath}')
+			ant.groovyc(
+				srcdir:'test/groovy',
+				destdir:'${testClassesDir}',
+				classpath:'${test.classpath}',
+			) {
+				javac(debug:'on')
+			}
+		</groovy>
+	</target>
+
+	<!--
+	This project's code is compiled, and the tests are run.
+	This target can be run with Ant as opposed to the Eclipse AntRunner application.
+	-->
+	<target name="test" depends="test.compile, test.only" />
 
 	<!--
 	Assumes a build of the non-test code has been done.
@@ -320,12 +385,73 @@ as the working directory.
 
 	This target can be run with Ant as opposed to the Eclipse AntRunner application.
 	-->
-	<target name="test.compile.and.run.only">
-		<echo message="Compiling and running tests." />
-		<property name="basedir.location" location="${basedir}" />
-		<echo message="basedir=${basedir.location}" />
-		<echo message="ECLIPSEJARS=${ECLIPSEJARS}" />
-		<echo message="SAFSJARS=${SAFSJARS}" />
+	<target name="test.compile.and.run.only" depends="test.compile.only, test.only" />
+
+	<!--
+	Assumes a build of the code has been done.  This target only runs the tests.
+	This target can be run with Ant as opposed to the Eclipse AntRunner application.
+	-->
+	<target name="test.only" depends="test.classpath">
+		<groovy>
+			// Create the runtime classpath.
+			ant.path(id:"test.runtime.classpath") {
+				// this project's compiled classes
+				pathelement(location:'${build.result.folder}/@dot')
+
+				// Now add some jars from dist.  This requires the
+				// SAFS build to run first.
+
+				// the seleniumplus.jar has to be on the classpath like this
+				// for the code to recognize it as SeleniumPlus product.
+				// Otherwise, the selenium server will not be started correctly.
+				pathelement(path:'${SAFSJARS}/../dist/libs/seleniumplus.jar')
+
+				fileset(dir:'${SAFSJARS}/../dist/libs') {
+					include(name:'*.jar')
+				}
+				pathelement(path:'${test.classpath}')
+			}
+			ant.property(name:'test.runtime.classpath', refid:'test.runtime.classpath')
+
+			// Clean the report directories.
+			ant.delete(dir:'${testBuildDirectory}/reports/xml', failonerror:false)
+			ant.delete(dir:'${testBuildDirectory}/reports/html', failonerror:false)
+			ant.mkdir(dir:'${testBuildDirectory}/reports/xml')
+
+			// Run the tests.
+			def debugPort = properties.'test.debug.port'  // set to non-zero to attach to a debugger.
+			ant.property(name:'test.timeout', value:'300000') // 5 min default
+
+			ant.junit(failureProperty:"tests-failed", fork:true, printsummary:true, timeout:'${test.timeout}') {
+				classpath {
+					path(refid:"test.runtime.classpath")
+					pathelement(location:'${testClassesDir}')
+				}
+				if (debugPort) {
+					jvmarg(value:"-Xdebug")
+					jvmarg(value:"-Xrunjdwp:transport=dt_socket,address=$debugPort,suspend=y,server=y")
+				}
+				formatter(type:"xml")
+				batchtest(todir:'${testBuildDirectory}/reports/xml') {
+					fileset(dir:'${testClassesDir}') {
+						include(name:"**/*.class")
+						exclude(name:'**/*$$*.class')
+					}
+				}
+			}
+			// run the junit report
+			ant.mkdir(dir:'${testBuildDirectory}/reports/html')
+			ant.junitreport(todir:'${testBuildDirectory}/reports/html') {
+				fileset(dir:'${testBuildDirectory}/reports/xml') {
+					include(name:'TEST-*.xml')
+				}
+				report(format:'frames', todir:'${testBuildDirectory}/reports/html')
+			}
+			// if there were test failures, fail the build.
+			if (properties.'tests-failed') {
+				ant.fail(message:'One or more tests have failed.  See ${testBuildDirectory}/reports/html/index.html for details.')
+			}
+		</groovy>
 	</target>
 
 	<target name="checkCompilationResults" if="compilation.error.occured">
@@ -424,6 +550,7 @@ as the working directory.
 	<target name="clean" depends="init" description="Clean the plug-in: Seleniumplus_plugin of all the zips, jars and logs created.">
 		<delete dir="${build.result.folder}/@dot"/>
 		<delete file="${build.result.folder}/src.zip"/>
+		<delete dir="${testBuildDirectory}" failonerror="false"/>
 		<delete file="${plugin.destination}/Seleniumplus_plugin_1.0.0.201312102336.jar"/>
 		<delete file="${plugin.destination}/Seleniumplus_plugin_1.0.0.201312102336.zip"/>
 		<delete dir="${temp.folder}"/>
