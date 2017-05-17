@@ -335,6 +335,10 @@ as the working directory.
 				// this project's compiled classes
 				pathelement(location:'${build.result.folder}/@dot')
 
+				// test jars - see the README.txt in test/lib.
+				fileset(dir:'test/lib') {
+					include(name:'*.jar')
+				}
 				path(refid:'@dot.classpath')
 				path(refid:'groovy.classpath')
 
@@ -361,7 +365,6 @@ as the working directory.
 	<target name="test.compile.only" depends="init.groovy,test.classpath">
 		<groovy>
 			ant.mkdir(dir:'${testClassesDir}')
-			ant.mkdir(dir:'test/groovy')
 			ant.typedef(name:'groovyc', classname:'org.codehaus.groovy.ant.Groovyc', classpath:'${test.classpath}')
 			ant.groovyc(
 				srcdir:'test/groovy',
@@ -397,6 +400,11 @@ as the working directory.
 			ant.path(id:"test.runtime.classpath") {
 				// this project's compiled classes
 				pathelement(location:'${build.result.folder}/@dot')
+
+				// test jars - see the README.txt in test/lib.
+				fileset(dir:'test/lib') {
+					include(name:'*.jar')
+				}
 
 				// Now add some jars from dist.  This requires the
 				// SAFS build to run first.
@@ -436,6 +444,10 @@ as the working directory.
 					fileset(dir:'${testClassesDir}') {
 						include(name:"**/*.class")
 						exclude(name:'**/*$$*.class')
+						exclude(name:'**/EclipseMock.class')
+						exclude(name:'**/LogFileUtil.class')
+						exclude(name:'**/SeleniumPlusTestUtil.class')
+						exclude(name:'**/TestUtil.class')
 					}
 				}
 			}
