@@ -135,9 +135,7 @@ as the working directory.
 			<patternset includes="e4-ide.jar"/>
 		</unzip>
 	</target>
-	<target name="@dot" depends="init,@dot.nestedJars" unless="@dot" description="Create jar: Seleniumplus_plugin @dot.">
-		<delete dir="${build.result.folder}/@dot"/>
-		<mkdir dir="${build.result.folder}/@dot"/>
+	<target name="@dot.init" depends="init" description="Init @dot.">
 		<path id="@dot.classpath">
 			<pathelement path="${eclipsePlugins}/org.eclipse.ui_3.105.0.v20130522-1122.jar"/>
 			<pathelement path="${eclipsePlugins}/org.eclipse.core.runtime_3.9.0.v20130326-1255.jar"/>
@@ -269,6 +267,10 @@ as the working directory.
 			
 			<pathelement path="${build.result.folder}/../Seleniumplus_plugin_1.0.0.201312102336/external:$SELENIUM_PLUS$/libs/seleniumplus.jar"/>
 		</path>
+	</target>
+	<target name="@dot" depends="init,@dot.nestedJars,@dot.init" unless="@dot" description="Create jar: Seleniumplus_plugin @dot.">
+		<delete dir="${build.result.folder}/@dot"/>
+		<mkdir dir="${build.result.folder}/@dot"/>
 		<!-- compile the source code -->
 		<javac destdir="${build.result.folder}/@dot" failonerror="${javacFailOnError}" verbose="${javacVerbose}" debug="${javacDebugInfo}" includeAntRuntime="no" bootclasspath="${bundleBootClasspath}" source="${bundleJavacSource}" target="${bundleJavacTarget}"		>
 			<compilerarg line="${compilerArg}" compiler="${build.compiler}"/>
@@ -310,6 +312,20 @@ as the working directory.
 		<delete file="${compilation.problem.marker}" quiet="true"/>
 		<available property="@dot" file="${build.result.folder}/@dot"/>
 		<antcall target="@dot"/>
+	</target>
+
+	<!--
+	Assumes a build of the non-test code has been done.
+	This target only compiles and runs the tests.
+
+	This target can be run with Ant as opposed to the Eclipse AntRunner application.
+	-->
+	<target name="test.compile.and.run.only">
+		<echo message="Compiling and running tests." />
+		<property name="basedir.location" location="${basedir}" />
+		<echo message="basedir=${basedir.location}" />
+		<echo message="ECLIPSEJARS=${ECLIPSEJARS}" />
+		<echo message="SAFSJARS=${SAFSJARS}" />
 	</target>
 
 	<target name="checkCompilationResults" if="compilation.error.occured">
