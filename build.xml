@@ -430,7 +430,13 @@ as the working directory.
 			def debugPort = properties.'test.debug.port'  // set to non-zero to attach to a debugger.
 			ant.property(name:'test.timeout', value:'300000') // 5 min default
 
-			ant.junit(failureProperty:"tests-failed", fork:true, printsummary:true, timeout:'${test.timeout}') {
+			ant.junit(
+				failureProperty:"tests-failed",
+				fork:true,
+				printsummary:true,
+				timeout:'${test.timeout}',
+				dir:'${basedir}',
+			) {
 				classpath {
 					path(refid:"test.runtime.classpath")
 					pathelement(location:'${testClassesDir}')
