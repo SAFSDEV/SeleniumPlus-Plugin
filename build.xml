@@ -266,7 +266,7 @@ as the working directory.
 			
 			<pathelement path="${SAFSJARS}/seleniumplus.jar"/>
 			
-			<pathelement path="${build.result.folder}/../Seleniumplus_plugin_1.0.0.201312102336/external:$SELENIUM_PLUS$/libs/seleniumplus.jar"/>
+			<pathelement path="${build.result.folder}/../Seleniumplus_plugin_1.0.0.201312102336/external"/>
 		</path>
 	</target>
 	<target name="@dot" depends="init,@dot.nestedJars,@dot.init" unless="@dot" description="Create jar: Seleniumplus_plugin @dot.">
