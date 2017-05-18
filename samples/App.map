@@ -30,7 +30,7 @@ SignIn="Text={^nlsSignIn}"
 
 [LogIn]
 UserName="id=identifierId"
-UserNameNext="css=span.RveJvd.snByac"
+UserNameNext="id=identifierNext"
 Passwd="name=password"
-SignIn="css=div.ZFr60d.CeoRYc"
+SignIn="id=passwordNext"
 OneGoogle="alt=Google"
