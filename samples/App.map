@@ -29,9 +29,8 @@ SignIn="Text={^nlsSignIn}"
 #-------------------------------------------------------------------------------
 
 [LogIn]
-UserName="name=Email"
-UserNameNext="id=next"
-Passwd="name=Passwd"
-SignIn="id=signIn"
+UserName="id=identifierId"
+UserNameNext="css=span.RveJvd.snByac"
+Passwd="name=password"
+SignIn="css=div.ZFr60d.CeoRYc"
 OneGoogle="alt=Google"
-LogIn="class=main"
