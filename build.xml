@@ -396,6 +396,7 @@ as the working directory.
 	<target name="test.only" depends="test.classpath">
 		<groovy>
 			ant.property(name:'SELENIUM_PLUS', location:'${SAFSJARS}/../dist')
+			ant.echo(message:'SELENIUM_PLUS=${SELENIUM_PLUS}')
 
 			// Create the runtime classpath.
 			ant.path(id:"test.runtime.classpath") {
