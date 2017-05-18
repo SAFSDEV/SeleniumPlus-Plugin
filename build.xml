@@ -19,7 +19,6 @@ as the working directory.
 -->
 
 <project name="Seleniumplus_plugin" default="build.jars" basedir=".">
-        
 	<property name="eclipsePlugins" value="${ECLIPSEJARS}"/>
 	
 	<property name="buildDirectory" value="${basedir}/bin"/>
@@ -396,6 +395,8 @@ as the working directory.
 	-->
 	<target name="test.only" depends="test.classpath">
 		<groovy>
+			ant.property(name:'SELENIUM_PLUS', location:'${SAFSJARS}/../dist')
+
 			// Create the runtime classpath.
 			ant.path(id:"test.runtime.classpath") {
 				// this project's compiled classes
@@ -412,9 +413,9 @@ as the working directory.
 				// the seleniumplus.jar has to be on the classpath like this
 				// for the code to recognize it as SeleniumPlus product.
 				// Otherwise, the selenium server will not be started correctly.
-				pathelement(path:'${SAFSJARS}/../dist/libs/seleniumplus.jar')
+				pathelement(path:'${SELENIUM_PLUS}/libs/seleniumplus.jar')
 
-				fileset(dir:'${SAFSJARS}/../dist/libs') {
+				fileset(dir:'${SELENIUM_PLUS}/libs') {
 					include(name:'*.jar')
 				}
 				pathelement(path:'${test.classpath}')
@@ -441,6 +442,7 @@ as the working directory.
 					path(refid:"test.runtime.classpath")
 					pathelement(location:'${testClassesDir}')
 				}
+				env(key:'SELENIUM_PLUS', value:'${SELENIUM_PLUS}')
 				if (debugPort) {
 					jvmarg(value:"-Xdebug")
 					jvmarg(value:"-Xrunjdwp:transport=dt_socket,address=$debugPort,suspend=y,server=y")
