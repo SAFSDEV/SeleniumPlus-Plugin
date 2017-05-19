@@ -19,6 +19,13 @@ as the working directory.
 -->
 
 <project name="Seleniumplus_plugin" default="build.jars" basedir=".">
+	<!--
+	Defaults for SAFSJARS and ECLIPSEJARS.  To override, set them on the
+	command line with -DSAFSJARS="pathTo/safsjars" -DECLIPSEJARS="pathTo/eclipse/plugins"
+	-->
+	<property name="SAFSJARS" location="/SAFSBuild/safsjars" />
+	<property name="ECLIPSEJARS" location="/eclipse4/plugins" />
+
 	<property name="eclipsePlugins" value="${ECLIPSEJARS}"/>
 	
 	<property name="buildDirectory" value="${basedir}/bin"/>
