@@ -1,8 +1,57 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
-	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
+	<classpathentry kind="src" path="test/groovy"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
+	<classpathentry exported="true" kind="con" path="GROOVY_DSL_SUPPORT"/>
+	<classpathentry kind="lib" path="test/lib/javassist-3.21.0-GA.jar"/>
+	<classpathentry kind="lib" path="test/lib/mockito-core-1.10.19-sources.jar"/>
+	<classpathentry kind="lib" path="test/lib/mockito-core-1.10.19.jar"/>
+	<classpathentry kind="lib" path="test/lib/objenesis-2.4-sources.jar"/>
+	<classpathentry kind="lib" path="test/lib/objenesis-2.4.jar"/>
+	<classpathentry kind="lib" path="test/lib/org.eclipse.core.contenttype_3.5.0.v20150421-2214.jar"/>
+	<classpathentry kind="lib" path="test/lib/org.eclipse.core.jobs_3.7.0.v20150330-2103.jar"/>
+	<classpathentry kind="lib" path="test/lib/org.eclipse.core.resources_3.10.1.v20150725-1910.jar"/>
+	<classpathentry kind="lib" path="test/lib/org.eclipse.core.runtime_3.11.1.v20150903-1804.jar"/>
+	<classpathentry kind="lib" path="test/lib/org.eclipse.equinox.common_3.7.0.v20150402-1709.jar"/>
+	<classpathentry kind="lib" path="test/lib/org.eclipse.equinox.registry_3.6.0.v20150318-1503.jar"/>
+	<classpathentry kind="lib" path="test/lib/org.eclipse.jdt.core_3.11.0.xx-201604081629-e45.jar"/>
+	<classpathentry kind="lib" path="test/lib/org.eclipse.osgi_3.10.102.v20160118-1700.jar"/>
+	<classpathentry kind="lib" path="test/lib/powermock-api-mockito-1.6.6-sources.jar"/>
+	<classpathentry kind="lib" path="test/lib/powermock-api-mockito-1.6.6.jar"/>
+	<classpathentry kind="lib" path="test/lib/powermock-api-mockito-common-1.6.6-sources.jar"/>
+	<classpathentry kind="lib" path="test/lib/powermock-api-mockito-common-1.6.6.jar"/>
+	<classpathentry kind="lib" path="test/lib/powermock-api-support-1.6.6-sources.jar"/>
+	<classpathentry kind="lib" path="test/lib/powermock-api-support-1.6.6.jar"/>
+	<classpathentry kind="lib" path="test/lib/powermock-core-1.6.6-sources.jar"/>
+	<classpathentry kind="lib" path="test/lib/powermock-core-1.6.6.jar"/>
+	<classpathentry kind="lib" path="test/lib/powermock-module-junit4-1.6.6-sources.jar"/>
+	<classpathentry kind="lib" path="test/lib/powermock-module-junit4-1.6.6.jar"/>
+	<classpathentry kind="lib" path="test/lib/powermock-module-junit4-common-1.6.6-sources.jar"/>
+	<classpathentry kind="lib" path="test/lib/powermock-module-junit4-common-1.6.6.jar"/>
+	<classpathentry kind="lib" path="test/lib/powermock-reflect-1.6.6-sources.jar"/>
+	<classpathentry kind="lib" path="test/lib/powermock-reflect-1.6.6.jar"/>
+	<classpathentry kind="lib" path="test/lib/spock-core-1.0-groovy-2.4-sources.jar"/>
+	<classpathentry kind="lib" path="test/lib/spock-core-1.0-groovy-2.4.jar"/>
+	<classpathentry kind="var" path="SELENIUMPLUS_HOME/eclipse/plugins/org.eclipse.equinox.preferences_3.5.300.v20150408-1437.jar"/>
+	<classpathentry kind="var" path="SELENIUMPLUS_HOME/eclipse/plugins/org.eclipse.core.filesystem_1.5.0.v20150725-1910.jar"/>
+	<classpathentry kind="var" path="SELENIUMPLUS_HOME/eclipse/plugins/org.eclipse.ui.workbench_3.107.1.v20160120-2131.jar"/>
+	<classpathentry kind="var" path="SELENIUMPLUS_HOME/eclipse/plugins/org.eclipse.jface_3.11.1.v20160128-1644.jar"/>
+	<classpathentry kind="var" path="SELENIUMPLUS_HOME/eclipse/plugins/org.eclipse.swt.win32.win32.x86_64_3.104.2.v20160212-1350.jar"/>
+	<classpathentry kind="var" path="SELENIUMPLUS_HOME/eclipse/plugins/org.eclipse.core.commands_3.7.0.v20150422-0725.jar"/>
+	<classpathentry kind="var" path="SELENIUMPLUS_HOME/eclipse/plugins/org.eclipse.core.net_1.2.300.v20141118-1725.jar"/>
+	<classpathentry kind="var" path="SELENIUMPLUS_HOME/eclipse/plugins/org.eclipse.ui.workbench.texteditor_3.9.100.v20141023-1946.jar"/>
+	<classpathentry kind="var" path="SELENIUMPLUS_HOME/eclipse/plugins/org.eclipse.text_3.5.400.v20150505-1044.jar"/>
+	<classpathentry kind="var" path="SELENIUMPLUS_HOME/eclipse/plugins/org.eclipse.jface.text_3.10.0.v20150603-1752.jar"/>
+	<classpathentry kind="var" path="SELENIUMPLUS_HOME/eclipse/plugins/org.eclipse.ui.ide_3.11.0.v20150825-2158.jar"/>
+	<classpathentry kind="var" path="SELENIUMPLUS_HOME/eclipse/plugins/org.eclipse.jdt.launching_3.8.0.v20150527-0946.jar"/>
+	<classpathentry kind="var" path="SELENIUMPLUS_HOME/eclipse/plugins/org.eclipse.debug.core_3.10.0.v20150303-1130.jar"/>
+	<classpathentry kind="var" path="SELENIUMPLUS_HOME/eclipse/plugins/org.eclipse.debug.ui_3.11.101.v20160203-1230.jar"/>
+	<classpathentry kind="var" path="SELENIUMPLUS_HOME/eclipse/plugins/org.eclipse.ui.console_3.6.100.v20150822-1912.jar"/>
+	<classpathentry kind="var" path="SELENIUMPLUS_HOME/eclipse/plugins/org.apache.ant_1.9.6.v201510161327/lib/ant.jar"/>
+	<classpathentry kind="var" path="SELENIUMPLUS_HOME/eclipse/plugins/org.apache.ant_1.9.6.v201510161327/lib/ant-launcher.jar"/>
+	<classpathentry kind="var" path="SELENIUMPLUS_HOME/libs/JSTAFEmbedded.jar"/>
+	<classpathentry kind="var" path="SELENIUMPLUS_HOME/libs/selenium-server-standalone-2.52.0.jar"/>
 	<classpathentry kind="var" path="SELENIUMPLUS_HOME/libs/seleniumplus.jar">
 		<attributes>
 			<attribute name="javadoc_location" value="http://safsdev.sourceforge.net/doc/"/>
