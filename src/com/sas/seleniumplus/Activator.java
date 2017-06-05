@@ -41,7 +41,8 @@ import org.safs.tools.CaseInsensitiveFile;
 
 import com.sas.seleniumplus.natures.ProjectNature;
 import com.sas.seleniumplus.preferences.PreferenceConstants;
-import com.sas.seleniumplus.projects.BaseProject;
+import org.safs.seleniumplus.projects.BaseProject;
+import static org.safs.seleniumplus.projects.BaseProject.SELENIUM_PLUS_ENV;
 import com.sas.seleniumplus.projects.ProjectAddListener;
 
 /**
@@ -62,7 +63,7 @@ public class Activator extends AbstractUIPlugin implements org.eclipse.ui.IStart
 	private static ResourceBundle preferences = null;
 
 	/** The SeleniumPlus home directory got from environment {@link BaseProject#SELENIUM_PLUS_ENV} */
-	public static final String seleniumhome = System.getenv(BaseProject.SELENIUM_PLUS_ENV);
+	public static final String seleniumhome = System.getenv(SELENIUM_PLUS_ENV);
 
 	/**
 	 * The default constructor

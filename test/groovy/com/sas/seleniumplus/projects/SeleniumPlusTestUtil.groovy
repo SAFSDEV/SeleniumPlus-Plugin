@@ -1,5 +1,7 @@
 package com.sas.seleniumplus.projects
 
+import static org.safs.seleniumplus.projects.BaseProject.SELENIUM_PLUS_ENV;
+
 import com.sas.seleniumplus.Activator
 import com.sas.seleniumplus.builders.AppMapBuilder
 import com.sas.seleniumplus.consoles.TestErrorConsoleLineTracker
@@ -57,7 +59,7 @@ public class SeleniumPlusTestUtil {
 			eclipse.init()
 
 			// initialize SeleniumPlus
-			BaseProject.SELENIUM_PLUS = System.getenv(BaseProject.SELENIUM_PLUS_ENV)
+			BaseProject.SELENIUM_PLUS = System.getenv(SELENIUM_PLUS_ENV)
 			def activator = new Activator()
 			activator.start(eclipse.getBundleContext())
 			

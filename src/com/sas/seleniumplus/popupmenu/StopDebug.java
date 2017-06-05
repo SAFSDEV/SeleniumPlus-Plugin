@@ -4,14 +4,14 @@ import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 
-import com.sas.seleniumplus.projects.BaseProject;
+import static org.safs.seleniumplus.projects.BaseProject.SELENIUM_PLUS_ENV;
 
 public class StopDebug extends AbstractHandler{
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 
-		String selenv = System.getenv(BaseProject.SELENIUM_PLUS_ENV);
+		String selenv = System.getenv(SELENIUM_PLUS_ENV);
 
 		// TODO Need to support Unix/Linux/Mac
 		boolean isWin = true;

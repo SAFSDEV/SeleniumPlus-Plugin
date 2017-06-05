@@ -8,11 +8,11 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.ui.PlatformUI;
 
 import com.sas.seleniumplus.Activator;
-import com.sas.seleniumplus.projects.BaseProject;
+import static org.safs.seleniumplus.projects.BaseProject.SELENIUM_PLUS_ENV;
 
 public class XpathTabledoc  extends AbstractHandler {
 
-String selenv = System.getenv(BaseProject.SELENIUM_PLUS_ENV);
+String selenv = System.getenv(SELENIUM_PLUS_ENV);
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
