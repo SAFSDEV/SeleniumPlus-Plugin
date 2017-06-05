@@ -38,8 +38,6 @@ public class BaseProject {
 	/** holds path to STAF install directory -- once validated. */
 	public static String STAFDIR;
 
-	/** "SELENIUM_PLUS" the system environment variable name holding the path where SeleniumPlus has been installed */
-	public static String SELENIUM_PLUS_ENV = "SELENIUM_PLUS";
 	/** "STAFDIR" */
 	public static String STAFDIR_ENV = "STAFDIR";
 	/** "/bin/STAFProc" */

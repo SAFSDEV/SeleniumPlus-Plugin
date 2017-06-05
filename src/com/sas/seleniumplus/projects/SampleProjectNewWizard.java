@@ -1,5 +1,7 @@
 package com.sas.seleniumplus.projects;
 
+import static org.safs.seleniumplus.projects.BaseProject.SELENIUM_PLUS_ENV;
+
 import java.io.File;
 import java.net.URI;
 import org.eclipse.core.runtime.CoreException;
@@ -43,7 +45,7 @@ public class SampleProjectNewWizard extends Wizard implements INewWizard, IExecu
 
 	@Override
 	public void init(IWorkbench workbench, IStructuredSelection selection) {
-		String selenv = System.getenv(BaseProject.SELENIUM_PLUS_ENV);
+		String selenv = System.getenv(SELENIUM_PLUS_ENV);
 
 		if (selenv != null)	{
 
