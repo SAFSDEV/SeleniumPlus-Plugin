@@ -1,5 +1,7 @@
 package com.sas.seleniumplus.builders;
 
+import static org.safs.seleniumplus.projects.BaseProject.SRC_TEST_DIR;
+
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunchConfiguration;
@@ -45,7 +47,7 @@ public class LaunchApp implements ILaunchShortcut  {
 		IJavaProject jProject = ((IJavaElement) iJ).getJavaProject();
 
 		String selectedClassPath = ((IJavaElement) iJ).getPath().toString();
-		String[] tempClass = selectedClassPath.split(jProject.getElementName() + "/"+BaseProject.SRC_TEST_DIR+"/");
+		String[] tempClass = selectedClassPath.split(jProject.getElementName() + "/"+SRC_TEST_DIR+"/");
 		String classNametmp = tempClass[1].replace("/", ".");
 		String className = classNametmp.substring(0, classNametmp.lastIndexOf("."));
 

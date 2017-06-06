@@ -4,6 +4,7 @@ package com.sas.seleniumplus.projects;
  */
 
 import static org.safs.seleniumplus.projects.BaseProject.SELENIUM_PLUS;
+import static org.safs.seleniumplus.projects.BaseProject.SRC_TEST_DIR;
 
 import java.io.File;
 import java.io.InputStream;
@@ -46,8 +47,6 @@ public class BaseProject {
 	/** "SAFSDIR" */
 	public static String SAFSDIR_ENV = "SAFSDIR";
 
-	/** "Tests" */
-	public static String SRC_TEST_DIR = "Tests";
 	/** "src" */
 	public static String SRC_SRC_DIR = "src";
 
