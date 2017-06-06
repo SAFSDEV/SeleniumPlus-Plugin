@@ -1,6 +1,7 @@
 package com.sas.seleniumplus.projects;
 
 import static org.safs.Constants.ENV_SELENIUM_PLUS;
+import static org.safs.seleniumplus.projects.BaseProject.SELENIUM_PLUS;
 
 import java.io.File;
 import java.net.URI;
@@ -52,7 +53,7 @@ public class SampleProjectNewWizard extends Wizard implements INewWizard, IExecu
 			File projectdir = new File(selenv);
 
 			if (projectdir.exists()){
-				BaseProject.SELENIUM_PLUS = selenv;
+				SELENIUM_PLUS = selenv;
 				BaseProject.STAFDIR = System.getenv(BaseProject.STAFDIR_ENV);
 				return;
 			}
