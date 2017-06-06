@@ -1,5 +1,7 @@
 package com.sas.seleniumplus.builders;
 
+import static org.safs.seleniumplus.projects.BaseProject.SRC_TEST_DIR;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -30,10 +32,10 @@ public class AppMapBuilder extends IncrementalProjectBuilder {
 		String projectPath = getProject().getLocation().toString();
 		if (getProject().getFolder(BaseProject.SRC_SRC_DIR).exists()){
 			srcDir = "/"+ BaseProject.SRC_SRC_DIR +"/";
-		} else if (getProject().getFolder(BaseProject.SRC_TEST_DIR).exists()){
-			srcDir = "/"+ BaseProject.SRC_TEST_DIR +"/";
+		} else if (getProject().getFolder(SRC_TEST_DIR).exists()){
+			srcDir = "/"+ SRC_TEST_DIR +"/";
 		} else {
-			srcDir = "/"+ BaseProject.SRC_TEST_DIR +"/";
+			srcDir = "/"+ SRC_TEST_DIR +"/";
 		}
 
 		String packageName = null;

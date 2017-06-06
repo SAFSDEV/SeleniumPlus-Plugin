@@ -3,6 +3,9 @@ package com.sas.seleniumplus;
  * Developer logs:
  * APR 20, 2017	(sbjlwa)	Load custom-resource-bundle before trying the default one.
  */
+
+import static org.safs.Constants.ENV_SELENIUM_PLUS;
+
 import java.io.File;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -41,7 +44,6 @@ import org.safs.tools.CaseInsensitiveFile;
 
 import com.sas.seleniumplus.natures.ProjectNature;
 import com.sas.seleniumplus.preferences.PreferenceConstants;
-import com.sas.seleniumplus.projects.BaseProject;
 import com.sas.seleniumplus.projects.ProjectAddListener;
 
 /**
@@ -61,15 +63,15 @@ public class Activator extends AbstractUIPlugin implements org.eclipse.ui.IStart
 	/** The shared Preference ResourceBundle instance */
 	private static ResourceBundle preferences = null;
 
-	/** The SeleniumPlus home directory got from environment {@link BaseProject#SELENIUM_PLUS_ENV} */
-	public static final String seleniumhome = System.getenv(BaseProject.SELENIUM_PLUS_ENV);
+	/** The SeleniumPlus home directory got from environment {@link #ENV_SELENIUM_PLUS} */
+	public static final String seleniumhome = System.getenv(ENV_SELENIUM_PLUS);
 
 	/**
 	 * The default constructor
 	 */
 	public Activator() {
 		super();
-		if(seleniumhome == null) throw new IllegalStateException("SELENIUM_PLUS System Environment '"+BaseProject.SELENIUM_PLUS_ENV+"' was not set!");
+		if(seleniumhome == null) throw new IllegalStateException("SELENIUM_PLUS System Environment '"+ENV_SELENIUM_PLUS+"' was not set!");
 	}
 
 	/**

@@ -11,7 +11,7 @@ import org.eclipse.core.commands.ExecutionException;
 import org.safs.tools.CaseInsensitiveFile;
 
 import com.sas.seleniumplus.Activator;
-import com.sas.seleniumplus.projects.BaseProject;
+import static org.safs.Constants.ENV_SELENIUM_PLUS;
 
 import java.util.Map;
 import java.util.jar.Attributes.Name;
@@ -23,7 +23,7 @@ public class CheckVersion extends AbstractHandler {
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 
-		String rootdir = System.getenv(BaseProject.SELENIUM_PLUS_ENV);
+		String rootdir = System.getenv(ENV_SELENIUM_PLUS);
 		final String SELENIUM_SERVER_JAR_PART_NAME = "selenium-server-standalone";
 
 		try {

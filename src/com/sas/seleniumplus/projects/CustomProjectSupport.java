@@ -1,5 +1,7 @@
 package com.sas.seleniumplus.projects;
 
+import static org.safs.seleniumplus.projects.BaseProject.SRC_TEST_DIR;
+
 import java.io.InputStream;
 import java.net.URI;
 
@@ -46,7 +48,7 @@ public class CustomProjectSupport {
 		Assert.isTrue(projectName.trim().length() > 0);
 
 		IProject project = createBaseProject(projectName, location);
-		packageDir = BaseProject.SRC_SRC_DIR+ "/com/" + companyName.toLowerCase() +"/"+ projectName.toLowerCase() +"/"+ BaseProject.SRC_TEST_DIR+"/" ;
+		packageDir = BaseProject.SRC_SRC_DIR+ "/com/" + companyName.toLowerCase() +"/"+ projectName.toLowerCase() +"/"+ SRC_TEST_DIR+"/" ;
 		mapPkg = "com." + companyName.toLowerCase() + "."+ projectName.toLowerCase() ;
 
 		try {

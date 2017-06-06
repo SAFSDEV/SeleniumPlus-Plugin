@@ -2,6 +2,10 @@ package com.sas.seleniumplus.projects;
 /**
  * APR 26, 2017	(SBJLWA) Modified createBaseProject(): Use CommonLib.getLatestSeleniumPlusJARS().
  */
+
+import static org.safs.seleniumplus.projects.BaseProject.SELENIUM_PLUS;
+import static org.safs.seleniumplus.projects.BaseProject.SRC_TEST_DIR;
+
 import java.io.File;
 import java.io.InputStream;
 import java.net.URI;
@@ -33,13 +37,9 @@ import com.sas.seleniumplus.popupmenu.FileTemplates;
 
 public class BaseProject {
 
-	/** holds path to SeleniumPlus install directory -- once validated. */
-	public static String SELENIUM_PLUS;
 	/** holds path to STAF install directory -- once validated. */
 	public static String STAFDIR;
 
-	/** "SELENIUM_PLUS" the system environment variable name holding the path where SeleniumPlus has been installed */
-	public static String SELENIUM_PLUS_ENV = "SELENIUM_PLUS";
 	/** "STAFDIR" */
 	public static String STAFDIR_ENV = "STAFDIR";
 	/** "/bin/STAFProc" */
@@ -47,8 +47,6 @@ public class BaseProject {
 	/** "SAFSDIR" */
 	public static String SAFSDIR_ENV = "SAFSDIR";
 
-	/** "Tests" */
-	public static String SRC_TEST_DIR = "Tests";
 	/** "src" */
 	public static String SRC_SRC_DIR = "src";
 
