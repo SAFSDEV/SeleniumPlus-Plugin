@@ -1,6 +1,7 @@
 package com.sas.seleniumplus.projects
 
-import static org.safs.seleniumplus.projects.BaseProject.SELENIUM_PLUS_ENV;
+import static org.safs.Constants.ENV_SELENIUM_PLUS;
+import static org.safs.seleniumplus.projects.BaseProject.SELENIUM_PLUS
 
 import com.sas.seleniumplus.Activator
 import com.sas.seleniumplus.builders.AppMapBuilder
@@ -59,7 +60,7 @@ public class SeleniumPlusTestUtil {
 			eclipse.init()
 
 			// initialize SeleniumPlus
-			BaseProject.SELENIUM_PLUS = System.getenv(SELENIUM_PLUS_ENV)
+			SELENIUM_PLUS = System.getenv(ENV_SELENIUM_PLUS)
 			def activator = new Activator()
 			activator.start(eclipse.getBundleContext())
 			
