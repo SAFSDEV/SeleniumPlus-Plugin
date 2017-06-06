@@ -1,5 +1,7 @@
 package com.sas.seleniumplus.popupmenu;
 
+import static org.safs.Constants.ENV_SELENIUM_PLUS;
+
 import java.io.File;
 import java.io.FilenameFilter;
 
@@ -16,14 +18,13 @@ import org.safs.android.auto.lib.Process2;
 import org.safs.tools.CaseInsensitiveFile;
 
 import com.sas.seleniumplus.Activator;
-import static org.safs.seleniumplus.projects.BaseProject.SELENIUM_PLUS_ENV;
 
 public class StartServer extends AbstractHandler{
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 
-		String seleniumdir = System.getenv(SELENIUM_PLUS_ENV);
+		String seleniumdir = System.getenv(ENV_SELENIUM_PLUS);
 
 		if(seleniumdir == null || seleniumdir.length()==0){
 			Activator.log("StartServer cannot deduce SELENIUM_PLUS Environment Variable/Installation Directory.");

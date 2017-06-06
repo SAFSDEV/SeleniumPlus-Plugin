@@ -1,6 +1,6 @@
 package com.sas.seleniumplus.projects;
 
-import static org.safs.seleniumplus.projects.BaseProject.SELENIUM_PLUS_ENV;
+import static org.safs.Constants.ENV_SELENIUM_PLUS;
 
 import java.io.File;
 import java.net.URI;
@@ -45,7 +45,7 @@ public class CustomProjectNewWizard extends Wizard implements INewWizard, IExecu
 
 	@Override
 	public void init(IWorkbench workbench, IStructuredSelection selection) {
-		String selenv = System.getenv(SELENIUM_PLUS_ENV);
+		String selenv = System.getenv(ENV_SELENIUM_PLUS);
 
 		if (selenv != null)	{
 
