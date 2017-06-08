@@ -3,6 +3,8 @@ package com.sas.seleniumplus.projects
 import com.sas.seleniumplus.preferences.PreferenceConstants
 import com.sas.seleniumplus.projects.BaseProject
 
+import org.safs.seleniumplus.projects.ProjectMap
+
 import org.eclipse.core.runtime.IPath
 import org.eclipse.core.internal.resources.WorkspaceRoot
 import org.eclipse.core.internal.utils.FileUtil
@@ -42,7 +44,7 @@ class EclipseMock extends Specification {
 	public File workspaceDir
 	
 	public init() {
-		projectMap = [:]
+		projectMap = new ProjectMap(workspaceDir)
 		folderMap = [:]
 		
 		workspace = createWorkspace()
@@ -66,8 +68,7 @@ class EclipseMock extends Specification {
 	}
 
 	public initMocksForProject(projectName) {
-		def projectInfo = getProjectInfo(projectName)		
-		projectInfo.projectDir = new File(workspaceDir, projectName)
+		def projectInfo = projectMap.getProjectInfo(projectName)
 		
 		IProject project = Mock(IProject)
 		projectInfo.mock = project
@@ -102,7 +103,7 @@ class EclipseMock extends Specification {
 		project.getType() >> IResource.PROJECT
 		project.getFullPath() >> projectPath
 		project.getDescription() >> {
-			def projectDescription = getProjectInfo(projectName).description
+			def projectDescription = projectMap.getProjectInfo(projectName).description
 			projectDescription
 		}
 		project.getFile(_) >> { IPath mypath ->
@@ -111,7 +112,7 @@ class EclipseMock extends Specification {
 		}
 		
 		project.create(_, _) >> { IProjectDescription desc, arg2 ->
-			def projectDescription = getProjectInfo(projectName).description
+			def projectDescription = projectMap.getProjectInfo(projectName).description
 			assert desc.is(projectDescription)
 			// This is where eclipse creates the .project file.
 			// This test does not need that, but it does need the project directory created.
@@ -120,21 +121,11 @@ class EclipseMock extends Specification {
 		
 		project.open(_) >> {
 			// This is where eclipse creates the bin dir.
-			projectInfo.binDir = new File(projectInfo.projectDir, "bin")
 			projectInfo.binDir.mkdirs()
 		}
 		projectInfo
 	}
 
-	private getProjectInfo(projectName) {
-		def projectInfo = projectMap.get(projectName)
-		if (projectInfo == null) {
-			projectInfo = [:]
-			projectMap.put(projectName, projectInfo)
-		}
-		projectInfo
-	}
-	
 	private IWorkspace createWorkspace() {
 		IWorkspace workspace = Mock(IWorkspace)
 		
@@ -147,7 +138,7 @@ class EclipseMock extends Specification {
 		workspace.getRoot() >> workspaceRoot
 		
 		workspaceRoot.getProject(_) >> { String projectName ->
-			def project = getProjectInfo(projectName).mock
+			def project = projectMap.getProjectInfo(projectName).mock
 			assert project != null
 			project
 		}
@@ -161,7 +152,7 @@ class EclipseMock extends Specification {
 			String[] natureIds = ["org.eclipse.jdt.core.javanature", "org.eclipse.wst.common.project.facet.core.nature"] as String[]
 			projectDescription.getNatureIds() >> natureIds
 
-			def projectInfo = getProjectInfo(projectName)
+			def projectInfo = projectMap.getProjectInfo(projectName)
 			projectInfo.description = projectDescription
 			projectDescription
 		}
