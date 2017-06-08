@@ -338,7 +338,7 @@ public class BaseProject extends org.safs.projects.seleniumplus.projects.BasePro
 
 				appMap = mapFolder.getFile(APPMAP_ORDER_FILE);
 				//mapstream = BaseProject.class.getResourceAsStream("../../../../samples/AppMap.order");
-				mapstream = loader.getResourceAsStream(org.safs.projects.seleniumplus.projects.BaseProject.APPMAP_ORDER_RESOURCE);
+				mapstream = loader.getResourceAsStream(APPMAP_ORDER_RESOURCE);
 				appMap.create(mapstream, true, null);
 				if (mapstream != null) mapstream.close();
 
