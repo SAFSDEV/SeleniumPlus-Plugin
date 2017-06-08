@@ -6,13 +6,10 @@ import java.net.URI;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.Path;
-
 import org.safs.projects.common.projects.callbacks.Callbacks;
 import org.safs.projects.common.projects.callbacks.CreateFolderCallback;
 import org.safs.projects.common.projects.callbacks.CreatePathCallback;
 import org.safs.projects.common.projects.callbacks.CreateProjectCallback;
-import org.safs.projects.common.projects.callbacks.GetFolderCallback;
-import org.safs.projects.common.projects.pojo.POJOFolder;
 import org.safs.projects.common.projects.pojo.POJOPath;
 import org.safs.projects.common.projects.pojo.POJOProject;
 
