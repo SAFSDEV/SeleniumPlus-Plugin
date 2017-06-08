@@ -31,7 +31,7 @@ import com.sas.seleniumplus.builders.AppMapBuilder;
 import com.sas.seleniumplus.natures.ProjectNature;
 import com.sas.seleniumplus.popupmenu.FileTemplates;
 
-public class BaseProject extends org.safs.seleniumplus.projects.BaseProject {
+public class BaseProject extends org.safs.projects.seleniumplus.projects.BaseProject {
 
 	/** holds path to STAF install directory -- once validated. */
 	public static String STAFDIR;
