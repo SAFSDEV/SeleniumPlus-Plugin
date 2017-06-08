@@ -24,10 +24,15 @@ import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.launching.JavaRuntime;
+import org.safs.projects.common.projects.callbacks.Callbacks;
 
 import com.sas.seleniumplus.Activator;
 import com.sas.seleniumplus.CommonLib;
 import com.sas.seleniumplus.builders.AppMapBuilder;
+import com.sas.seleniumplus.eclipse.EclipseCallbacks;
+import com.sas.seleniumplus.eclipse.IContainerHolder;
+import com.sas.seleniumplus.eclipse.IFolderHolder;
+import com.sas.seleniumplus.eclipse.IProjectHolder;
 import com.sas.seleniumplus.natures.ProjectNature;
 import com.sas.seleniumplus.popupmenu.FileTemplates;
 
@@ -98,8 +103,11 @@ public class BaseProject extends org.safs.projects.seleniumplus.projects.BasePro
 		Assert.isNotNull(companyName);
 		Assert.isTrue(projectName.trim().length() > 0);
 
-		if (projectType.equalsIgnoreCase(PROJECTTYPE_SELENIUM) ||
-			projectType.equalsIgnoreCase(PROJECTTYPE_SAMPLE)){
+		if (projectType.equalsIgnoreCase(PROJECTTYPE_SAMPLE)) {
+			Callbacks callbacks = new EclipseCallbacks(projectName, location);
+			IProjectHolder projectHolder = (IProjectHolder) org.safs.projects.seleniumplus.projects.BaseProject.createProject(projectName, location, companyName, projectType, callbacks);
+			return projectHolder.getIProject();
+		} else if (projectType.equalsIgnoreCase(PROJECTTYPE_SELENIUM)){
 
 			srcDir = SRC_TEST_DIR;
 			testcaseDir = srcDir + "/"+ projectName.toLowerCase() +"/"+ SRC_TESTCASES_SUBDIR;
@@ -149,7 +157,7 @@ public class BaseProject extends org.safs.projects.seleniumplus.projects.BasePro
 	 * @param sourceDirName
 	 * @param location
 	 */
-	private static IProject createBaseProject(String projectName, String sourceDirName, URI location) {
+	public static IProject createBaseProject(String projectName, String sourceDirName, URI location) {
 
 		IProject newProject = ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
 
@@ -217,6 +225,18 @@ public class BaseProject extends org.safs.projects.seleniumplus.projects.BasePro
 		}
 		if (!folder.exists()) {
 			folder.create(false, true, null);
+		}
+	}
+
+	public static void createFolder(IFolderHolder folder) throws CoreException {
+		IContainerHolder parent = (IContainerHolder) folder.getParent();
+		if (parent.getIContainer() instanceof IFolder) {
+			IFolderHolder holder = new IFolderHolder((IFolder) parent.getIContainer());
+			createFolder(holder);
+		}
+		IFolder ifolder = folder.getIFolder();
+		if (!ifolder.exists()) {
+			ifolder.create(false, true, null);
 		}
 	}
 
@@ -369,7 +389,7 @@ public class BaseProject extends org.safs.projects.seleniumplus.projects.BasePro
 
 	}
 
-	private static void addNature(IProject project) throws CoreException {
+	public static void addNature(IProject project) throws CoreException {
 		if (!project.hasNature(ProjectNature.NATURE_ID)) {
 			IProjectDescription description = project.getDescription();
 			String[] prevNatures = description.getNatureIds();
