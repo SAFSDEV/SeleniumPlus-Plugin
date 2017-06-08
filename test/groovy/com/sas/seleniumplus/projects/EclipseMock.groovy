@@ -3,7 +3,7 @@ package com.sas.seleniumplus.projects
 import com.sas.seleniumplus.preferences.PreferenceConstants
 import com.sas.seleniumplus.projects.BaseProject
 
-import org.safs.seleniumplus.projects.ProjectMap
+import org.safs.projects.common.projects.ProjectMap
 
 import org.eclipse.core.runtime.IPath
 import org.eclipse.core.internal.resources.WorkspaceRoot

@@ -4,7 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.StringWriter;
 
-public class FileTemplates extends org.safs.seleniumplus.popupmenu.FileTemplates {
+public class FileTemplates extends org.safs.projects.seleniumplus.popupmenu.FileTemplates {
 
 	/**
 	 * We will initialize file contents with a sample text.
