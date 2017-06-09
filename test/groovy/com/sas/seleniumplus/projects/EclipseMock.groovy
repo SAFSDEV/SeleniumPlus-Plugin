@@ -1,7 +1,6 @@
 package com.sas.seleniumplus.projects
 
 import com.sas.seleniumplus.preferences.PreferenceConstants
-import com.sas.seleniumplus.projects.BaseProject
 
 import org.safs.projects.common.projects.ProjectMap
 
@@ -223,37 +222,7 @@ class EclipseMock extends Specification {
 	private getFile(actualFile, filename) {
 		IFile tempFile = Mock(IFile)
 		tempFile.create(_, _, _) >> { InputStream source, boolean force, Object monitor ->
-			// TODO: uncomment the next line after getting the samples files on the Eclipse classpath.
-			// assert source != null
-			if (source == null) {
-				/*
-				 * The files were not loaded in the normal manner, so they will be
-				 * read directly as files.
-				 */
-				def resource
-				switch (filename) {
-					case "TestCase1.java":
-						resource = BaseProject.TESTCASECLASS_RESOURCE
-						break;
-					case "TestRun1.java":
-						resource = BaseProject.TESTRUNCLASS_RESOURCE
-						break;
-					case "SAMPLEApp.map":
-						resource = BaseProject.APPMAP_RESOURCE
-						break;
-					case "SAMPLEApp_en.map":
-						resource = BaseProject.APPMAP_EN_RESOURCE
-						break;
-					case BaseProject.APPMAP_ORDER_FILE:
-						resource = BaseProject.APPMAP_ORDER_RESOURCE
-						break;
-					default:
-						throw new RuntimeException("Unknown filename: $filename")
-				}
-				def file = new File(".$resource")
-				source = new FileInputStream(file)
-				assert source != null
-			}
+			assert source != null
 			def outFile = new File(actualFile, filename)
 			def out = new FileOutputStream(outFile)
 			FileUtil.transferStreams(source, out, actualFile.absolutePath, null)
