@@ -24,7 +24,7 @@ class BaseProjectTest {
 	def seleniumPlusTestUtil = new SeleniumPlusTestUtil()
 	
 	@Test
-	void "Test SAMPLE project"() {
+	void "Test SAMPLE project with mocked Eclipse"() {
 		seleniumPlusTestUtil.buildProjectAndRunTest(
 				projectName:  SampleProjectNewWizard.PROJECT_NAME,
 				projectType:  BaseProject.PROJECTTYPE_SAMPLE,

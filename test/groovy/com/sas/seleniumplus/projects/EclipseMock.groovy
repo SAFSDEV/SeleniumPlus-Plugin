@@ -1,7 +1,8 @@
 package com.sas.seleniumplus.projects
 
 import com.sas.seleniumplus.preferences.PreferenceConstants
-import com.sas.seleniumplus.projects.BaseProject
+
+import org.safs.projects.common.projects.ProjectMap
 
 import org.eclipse.core.runtime.IPath
 import org.eclipse.core.internal.resources.WorkspaceRoot
@@ -42,7 +43,7 @@ class EclipseMock extends Specification {
 	public File workspaceDir
 	
 	public init() {
-		projectMap = [:]
+		projectMap = new ProjectMap(workspaceDir)
 		folderMap = [:]
 		
 		workspace = createWorkspace()
@@ -66,8 +67,7 @@ class EclipseMock extends Specification {
 	}
 
 	public initMocksForProject(projectName) {
-		def projectInfo = getProjectInfo(projectName)		
-		projectInfo.projectDir = new File(workspaceDir, projectName)
+		def projectInfo = projectMap.getProjectInfo(projectName)
 		
 		IProject project = Mock(IProject)
 		projectInfo.mock = project
@@ -102,7 +102,7 @@ class EclipseMock extends Specification {
 		project.getType() >> IResource.PROJECT
 		project.getFullPath() >> projectPath
 		project.getDescription() >> {
-			def projectDescription = getProjectInfo(projectName).description
+			def projectDescription = projectMap.getProjectInfo(projectName).description
 			projectDescription
 		}
 		project.getFile(_) >> { IPath mypath ->
@@ -111,7 +111,7 @@ class EclipseMock extends Specification {
 		}
 		
 		project.create(_, _) >> { IProjectDescription desc, arg2 ->
-			def projectDescription = getProjectInfo(projectName).description
+			def projectDescription = projectMap.getProjectInfo(projectName).description
 			assert desc.is(projectDescription)
 			// This is where eclipse creates the .project file.
 			// This test does not need that, but it does need the project directory created.
@@ -120,21 +120,11 @@ class EclipseMock extends Specification {
 		
 		project.open(_) >> {
 			// This is where eclipse creates the bin dir.
-			projectInfo.binDir = new File(projectInfo.projectDir, "bin")
 			projectInfo.binDir.mkdirs()
 		}
 		projectInfo
 	}
 
-	private getProjectInfo(projectName) {
-		def projectInfo = projectMap.get(projectName)
-		if (projectInfo == null) {
-			projectInfo = [:]
-			projectMap.put(projectName, projectInfo)
-		}
-		projectInfo
-	}
-	
 	private IWorkspace createWorkspace() {
 		IWorkspace workspace = Mock(IWorkspace)
 		
@@ -147,7 +137,7 @@ class EclipseMock extends Specification {
 		workspace.getRoot() >> workspaceRoot
 		
 		workspaceRoot.getProject(_) >> { String projectName ->
-			def project = getProjectInfo(projectName).mock
+			def project = projectMap.getProjectInfo(projectName).mock
 			assert project != null
 			project
 		}
@@ -161,7 +151,7 @@ class EclipseMock extends Specification {
 			String[] natureIds = ["org.eclipse.jdt.core.javanature", "org.eclipse.wst.common.project.facet.core.nature"] as String[]
 			projectDescription.getNatureIds() >> natureIds
 
-			def projectInfo = getProjectInfo(projectName)
+			def projectInfo = projectMap.getProjectInfo(projectName)
 			projectInfo.description = projectDescription
 			projectDescription
 		}
@@ -232,37 +222,7 @@ class EclipseMock extends Specification {
 	private getFile(actualFile, filename) {
 		IFile tempFile = Mock(IFile)
 		tempFile.create(_, _, _) >> { InputStream source, boolean force, Object monitor ->
-			// TODO: uncomment the next line after getting the samples files on the Eclipse classpath.
-			// assert source != null
-			if (source == null) {
-				/*
-				 * The files were not loaded in the normal manner, so they will be
-				 * read directly as files.
-				 */
-				def resource
-				switch (filename) {
-					case "TestCase1.java":
-						resource = BaseProject.TESTCASECLASS_RESOURCE
-						break;
-					case "TestRun1.java":
-						resource = BaseProject.TESTRUNCLASS_RESOURCE
-						break;
-					case "SAMPLEApp.map":
-						resource = BaseProject.APPMAP_RESOURCE
-						break;
-					case "SAMPLEApp_en.map":
-						resource = BaseProject.APPMAP_EN_RESOURCE
-						break;
-					case BaseProject.APPMAP_ORDER_FILE:
-						resource = BaseProject.APPMAP_ORDER_RESOURCE
-						break;
-					default:
-						throw new RuntimeException("Unknown filename: $filename")
-				}
-				def file = new File(".$resource")
-				source = new FileInputStream(file)
-				assert source != null
-			}
+			assert source != null
 			def outFile = new File(actualFile, filename)
 			def out = new FileOutputStream(outFile)
 			FileUtil.transferStreams(source, out, actualFile.absolutePath, null)

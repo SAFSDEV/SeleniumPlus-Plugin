@@ -104,7 +104,7 @@ public class SeleniumPlusTestUtil {
 		def binDir = projectInfo.binDir
 		
 		// Compile the test classes to bin with the other tests
-		def srcDir = new File(projectDir, "Tests")
+		def srcDir = new File(projectDir, BaseProject.SRC_TEST_DIR)
 		testUtil.compile(srcDir:srcDir, destDir:binDir)
 	}
 	

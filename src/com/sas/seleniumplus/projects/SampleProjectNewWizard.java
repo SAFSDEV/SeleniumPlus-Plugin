@@ -24,7 +24,7 @@ public class SampleProjectNewWizard extends Wizard implements INewWizard, IExecu
 
 	private IConfigurationElement _configurationElement;
 
-	public static String PROJECT_NAME = "SAMPLE";
+	public static String PROJECT_NAME = org.safs.projects.seleniumplus.projects.SampleProjectNewWizard.PROJECT_NAME;
 
 
 	@Override

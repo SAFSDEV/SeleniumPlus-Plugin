@@ -24,22 +24,23 @@ import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.launching.JavaRuntime;
+import org.safs.projects.common.projects.callbacks.Callbacks;
 
 import com.sas.seleniumplus.Activator;
 import com.sas.seleniumplus.CommonLib;
 import com.sas.seleniumplus.builders.AppMapBuilder;
+import com.sas.seleniumplus.eclipse.EclipseCallbacks;
+import com.sas.seleniumplus.eclipse.IContainerHolder;
+import com.sas.seleniumplus.eclipse.IFolderHolder;
+import com.sas.seleniumplus.eclipse.IProjectHolder;
 import com.sas.seleniumplus.natures.ProjectNature;
 import com.sas.seleniumplus.popupmenu.FileTemplates;
 
-public class BaseProject {
+public class BaseProject extends org.safs.projects.seleniumplus.projects.BaseProject {
 
-	/** holds path to SeleniumPlus install directory -- once validated. */
-	public static String SELENIUM_PLUS;
 	/** holds path to STAF install directory -- once validated. */
 	public static String STAFDIR;
 
-	/** "SELENIUM_PLUS" the system environment variable name holding the path where SeleniumPlus has been installed */
-	public static String SELENIUM_PLUS_ENV = "SELENIUM_PLUS";
 	/** "STAFDIR" */
 	public static String STAFDIR_ENV = "STAFDIR";
 	/** "/bin/STAFProc" */
@@ -47,15 +48,6 @@ public class BaseProject {
 	/** "SAFSDIR" */
 	public static String SAFSDIR_ENV = "SAFSDIR";
 
-	/** "Tests" */
-	public static String SRC_TEST_DIR = "Tests";
-	/** "src" */
-	public static String SRC_SRC_DIR = "src";
-
-	/** "testcases" */
-	public static String SRC_TESTCASES_SUBDIR = "testcases";
-	/** "testruns" */
-	public static String SRC_TESTRUNS_SUBDIR = "testruns";
 	/** "tests" */
 	public static String SRC_TESTS_SUBDIR = "tests";
 	/** "suites" */
@@ -70,14 +62,6 @@ public class BaseProject {
 	/** build path attachment source zip*/
 	public final static String SAFSSELENIUM_PLUS_SOURCE_CORE = "source_core.zip";
 
-	/** "TestCase1" */
-	public static String TESTCASECLASS_FILE = "TestCase1";
-	/** "/samples/TestCase1.java" */
-	public static String TESTCASECLASS_RESOURCE = "/samples/TestCase1.java";
-	/** "TestRun1" */
-	public static String TESTRUNCLASS_FILE = "TestRun1";
-	/** "/samples/TestRun1.java" */
-	public static String TESTRUNCLASS_RESOURCE = "/samples/TestRun1.java";
 
 	/** "/libs/seleniumplus.jar" */
 	public static String SELENIUMPLUS_JAR_PATH = File.separator + "libs"+ File.separator + SELENIUMPLUS_JAR;
@@ -90,55 +74,15 @@ public class BaseProject {
 	/** "/libs/JSTAFEmbedded.jar" */
 	public static String NOSTAF_JAR_PATH = File.separator + "libs"+ File.separator + JSTAF_EMBEDDDED_JAR;
 
-	public static String srcDir;
-	public static String testcaseDir;
-	public static String testrunDir;
-
-	/** "Maps" */
-	public static String DATAPOOL_DIR = "Maps";
-	/** "Benchmarks" */
-	public static String BENCH_DIR = "Benchmarks";
-	/** "Diffs" */
-	public static String DIF_DIR = "Diffs";
-	/** "Actuals" */
-	public static String TEST_DIR = "Actuals";
-	/** "Logs" */
-	public static String LOGS_DIR = "Logs";
 
 	/** "SeleniumProject" */
 	public static String PROJECTTYPE_SELENIUM = "SeleniumProject";
 	/** "AdvanceProject" */
 	public static String PROJECTTYPE_ADVANCE  = "AdvanceProject";
-	/** "SampleProject" */
-	public static String PROJECTTYPE_SAMPLE   = "SampleProject";
-
-	/** "SAMPLE" */
-	public static String PROJECTNAME_SAMPLE   = "SAMPLE";
-
-	/** Map */
-	public static String MAPCLASS_FILE = "Map";
-	/** test.ini */
-	public static String TESTINI_FILE = "test.ini";
-	/** runAutomation.bat */
-	public static String RUNAUTOMATION_WIN_FILE = "runAutomation.bat";
-	/** /samples/runautomation.bat */
-	public static String RUNAUTOMATION_WIN_RESOURCE = "/samples/runautomation.bat";
 	/** runAutomation.sh */
 	public static String RUNAUTOMATION_UNX_FILE = "runAutomation.sh";
 	/** /samples/runautomation.sh */
 	public static String RUNAUTOMATION_UNX_RESOURCE = "/samples/runautomation.sh";
-	/** App.map */
-	public static String APPMAP_FILE = "App.map";
-	/** /samples/App.map */
-	public static String APPMAP_RESOURCE = "/samples/App.map";
-	/** App_en.map */
-	public static String APPMAP_EN_FILE = "App_en.map";
-	/** /samples/App_en.map */
-	public static String APPMAP_EN_RESOURCE = "/samples/App_en.map";
-	/** AppMap.order */
-	public static String APPMAP_ORDER_FILE = "AppMap.order";
-	/** /samples/AppMap.order */
-	public static String APPMAP_ORDER_RESOURCE = "/samples/AppMap.order";
 
 	public static String MSG_INSTALL_NOT_FOUND = "SeleniumPlus installation not found";
 	public static String MSG_INSTALL_AND_RESTART = " 1. Please install SeleniumPlus.\n" +
@@ -159,8 +103,11 @@ public class BaseProject {
 		Assert.isNotNull(companyName);
 		Assert.isTrue(projectName.trim().length() > 0);
 
-		if (projectType.equalsIgnoreCase(PROJECTTYPE_SELENIUM) ||
-			projectType.equalsIgnoreCase(PROJECTTYPE_SAMPLE)){
+		if (projectType.equalsIgnoreCase(PROJECTTYPE_SAMPLE)) {
+			Callbacks callbacks = new EclipseCallbacks(projectName, location);
+			IProjectHolder projectHolder = (IProjectHolder) org.safs.projects.seleniumplus.projects.BaseProject.createProject(projectName, location, companyName, projectType, callbacks);
+			return projectHolder.getIProject();
+		} else if (projectType.equalsIgnoreCase(PROJECTTYPE_SELENIUM)){
 
 			srcDir = SRC_TEST_DIR;
 			testcaseDir = srcDir + "/"+ projectName.toLowerCase() +"/"+ SRC_TESTCASES_SUBDIR;
@@ -210,7 +157,7 @@ public class BaseProject {
 	 * @param sourceDirName
 	 * @param location
 	 */
-	private static IProject createBaseProject(String projectName, String sourceDirName, URI location) {
+	public static IProject createBaseProject(String projectName, String sourceDirName, URI location) {
 
 		IProject newProject = ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
 
@@ -278,6 +225,18 @@ public class BaseProject {
 		}
 		if (!folder.exists()) {
 			folder.create(false, true, null);
+		}
+	}
+
+	public static void createFolder(IFolderHolder folder) throws CoreException {
+		IContainerHolder parent = (IContainerHolder) folder.getParent();
+		if (parent.getIContainer() instanceof IFolder) {
+			IFolderHolder holder = new IFolderHolder((IFolder) parent.getIContainer());
+			createFolder(holder);
+		}
+		IFolder ifolder = folder.getIFolder();
+		if (!ifolder.exists()) {
+			ifolder.create(false, true, null);
 		}
 	}
 
@@ -430,7 +389,7 @@ public class BaseProject {
 
 	}
 
-	private static void addNature(IProject project) throws CoreException {
+	public static void addNature(IProject project) throws CoreException {
 		if (!project.hasNature(ProjectNature.NATURE_ID)) {
 			IProjectDescription description = project.getDescription();
 			String[] prevNatures = description.getNatureIds();
