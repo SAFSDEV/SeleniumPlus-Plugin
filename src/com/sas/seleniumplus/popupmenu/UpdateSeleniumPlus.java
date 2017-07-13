@@ -1,7 +1,6 @@
 package com.sas.seleniumplus.popupmenu;
 
 /**
- * JUN 30, 2015	(LeiWang) Modify getProxySettings(): ***REMOVED***
  * JUL 10, 2015 (Carl Nagle) Refactor getProxySettings and execute to use existing System network configuration provided by Eclipse.
  * SEP 03, 2015 (Carl Nagle) trim lib url and plugin url from Preferences to prevent update errors.
  * APR 25, 2017 (Lei Wang) Moved most code to CommonLib.
