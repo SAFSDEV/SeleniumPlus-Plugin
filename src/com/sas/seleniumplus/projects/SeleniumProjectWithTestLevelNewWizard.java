@@ -19,6 +19,7 @@ package com.sas.seleniumplus.projects;
 
 import java.io.File;
 import java.net.URI;
+
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IConfigurationElement;
 import org.eclipse.core.runtime.IExecutableExtension;
@@ -29,39 +30,36 @@ import org.eclipse.ui.INewWizard;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.wizards.newresource.BasicNewProjectResourceWizard;
 
-public class SampleProjectNewWizard extends Wizard implements INewWizard, IExecutableExtension {
+public class SeleniumProjectWithTestLevelNewWizard extends Wizard implements INewWizard, IExecutableExtension {
 
-	private static final String PAGE_NAME = "Selenium+ Sample Project Wizard";
+	private static final String PAGE_NAME = "Selenium+ Project Wizard";
 
-	private static final String WIZARD_NAME = "Selenium+ Sample Project";
+	private static final String WIZARD_NAME = "New Selenium+ Project With Test Level";
 
-	private static final String WIZARD_DESCRIPTION = "Create Selenium+ Sample Project with all assets.";
+	private static final String WIZARD_DESCRIPTION = "Create new Selenium+ Project With Test Level (Cycle, Suite, TestCase).";
 
-	private SampleProjectPageWizard _pageOne;
+	private SeleniumProjectWithTestLevelPageWizard _pageOne;
 
 	private IConfigurationElement _configurationElement;
-
-	public static String PROJECT_NAME = org.safs.projects.seleniumplus.projects.SampleProjectNewWizard.PROJECT_NAME;
 
 
 	@Override
 	public void addPages() {
 	    super.addPages();
 
-	    _pageOne = new SampleProjectPageWizard(PAGE_NAME);
+	    _pageOne = new SeleniumProjectWithTestLevelPageWizard(PAGE_NAME);
 	    _pageOne.setTitle(WIZARD_NAME);
 	    _pageOne.setDescription(WIZARD_DESCRIPTION);
 	    addPage(_pageOne);
 	}
 
-	public SampleProjectNewWizard() {
+	public SeleniumProjectWithTestLevelNewWizard() {
 		setWindowTitle(WIZARD_NAME);
 	}
 
 	@Override
 	public void init(IWorkbench workbench, IStructuredSelection selection) {
 		String selenv = System.getenv(BaseProject.SELENIUM_PLUS_ENV);
-
 		if (selenv != null)	{
 
 			File projectdir = new File(selenv);
@@ -79,14 +77,14 @@ public class SampleProjectNewWizard extends Wizard implements INewWizard, IExecu
 	@Override
 	public boolean performFinish() {
 
-		String name = PROJECT_NAME;
+		String name = _pageOne.getProjectName().toUpperCase();
 		URI location = null;
 		if (!_pageOne.useDefaults()) {
 			location = _pageOne.getLocationURI();
 
 		} // else location == null
 
-		BaseProject.createProject(name, location,"sas", BaseProject.PROJECTTYPE_SAMPLE);
+		BaseProject.createProject(name,location,"sas",BaseProject.PROJECTTYPE_TESTLEVEL);
 
 		BasicNewProjectResourceWizard.updatePerspective(_configurationElement);
 
@@ -99,7 +97,5 @@ public class SampleProjectNewWizard extends Wizard implements INewWizard, IExecu
 			String propertyName, Object data) throws CoreException {
 		_configurationElement = config;
 	}
-
-
 
 }

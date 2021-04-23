@@ -426,12 +426,20 @@ as the working directory.
 				// Otherwise, the selenium server will not be started correctly.
 				pathelement(path:'${seleniumdist}/libs/seleniumplus.jar')
 
+			    //Put the selenium-server-standalone jar in front of selelnium legacy jar (selenium-server-safs.2.52.jar)
+				fileset(dir:'${seleniumdist}/libs') {
+					include(name:'selenium-server-standalone-*.jar')
+				}
+			
 				fileset(dir:'${seleniumdist}/libs') {
 					include(name:'*.jar')
+			        exclude(name:'selenium-server-standalone-*.jar')
 				}
 				pathelement(path:'${test.classpath}')
 			}
 			ant.property(name:'test.runtime.classpath', refid:'test.runtime.classpath')
+			
+			ant.echo(message:'classpath=${test.runtime.classpath}')
 
 			// Clean the report directories.
 			ant.delete(dir:'${testBuildDirectory}/reports/xml', failonerror:false)
@@ -441,6 +449,9 @@ as the working directory.
 			// Run the tests.
 			def debugPort = properties.'test.debug.port'  // set to non-zero to attach to a debugger.
 			ant.property(name:'test.timeout', value:'300000') // 5 min default
+			def safsDebugPortProperty = 'org.safs.seleniumplustest.forked.jvm.debug.port'
+			def safsDebugPort = properties.get(safsDebugPortProperty)
+
 
 			ant.junit(
 				failureProperty:"tests-failed",
@@ -457,6 +468,9 @@ as the working directory.
 				if (debugPort) {
 					jvmarg(value:"-Xdebug")
 					jvmarg(value:"-Xrunjdwp:transport=dt_socket,address=$debugPort,suspend=y,server=y")
+				}
+				if (safsDebugPort) {
+					sysproperty(key:safsDebugPortProperty, value:safsDebugPort)
 				}
 				formatter(type:"xml")
 				batchtest(todir:'${testBuildDirectory}/reports/xml') {

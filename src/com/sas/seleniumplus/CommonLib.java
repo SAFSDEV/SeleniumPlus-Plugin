@@ -1,8 +1,36 @@
+/**
+ * Copyright (C) SAS Institute, All rights reserved.
+ * General Public License: https://www.gnu.org/licenses/gpl-3.0.en.html
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+**/
 package com.sas.seleniumplus;
 /**
- * APR 25, 2017	(Lei Wang) Moved a lot of methods from UpdateSeleniumPlus.java
+ * APR 25, 2017	(LeiWang) Moved a lot of methods from UpdateSeleniumPlus.java
  *                       Moved this class from package com.sas.seleniumplus.popupmenu
- * APR 26, 2017	(Lei Wang) Modified getLatestSeleniumPlusJARS(): Use JSTAF.jar if JSTAFEmbedded.jar doesn't exist.
+ * APR 26, 2017	(LeiWang) Modified getLatestSeleniumPlusJARS(): Use JSTAF.jar if JSTAFEmbedded.jar doesn't exist.
+ * JUL 28, 2017	(LeiWang) Modified getJavaExe() etc.: Copy the embedded JRE to a temporary folder and use it so that the "embedded Java" under folder %SELENIUM_PLUS% can be modified.
+ * AUG 21, 2017	(LeiWang) Modified to stop SeleniumPlus IDE if it is using "embedded JRE" and if we are going to update it:
+ *                                copy "embedded JRE" to temp folder
+ *                                change eclipse.ini to use the JVM in the temp folder
+ *                       Modified to ignore the sub folder "Java" and "Java64" if we are not going to update "embedded JRE".
+ * SEP 01, 2017 (LEIWANG) Modified updateLibrary(): After library update, try to restore the JRE setting of file eclipse.ini
+ * JUL 03, 2018 (LEIWANG) Modified copyUpdateJar(): Copy also safsupdate.jar's dependencies to update backup folder.
+ *                        Modified updateLibrary(): Add extra parameter "-tools:GHOSTSCRIPT" to say "GHOSTSCRIPT" will be updated.
+ *                        Added updateGhostscript() to install the ghostscript; don't install ghostscript inside updateLibrary().
+ *                        Modified runCommand(): use ConsumOutStreamProcess to fix the nasty "hang for ever" problem.
+ * NOV 13, 2018 (LEIWANG) Modified refreshBuildPath(): added the log4j config file if it doesn't exist.
  */
 import java.io.File;
 import java.io.FilenameFilter;
@@ -13,6 +41,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import javax.swing.JOptionPane;
 
@@ -32,7 +61,13 @@ import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
+import org.safs.IndependantLog;
 import org.safs.StringUtils;
+import org.safs.install.ConsumOutStreamProcess;
+import org.safs.install.GhostScriptInstaller;
+import org.safs.install.InstallerImpl;
+import org.safs.install.LibraryUpdate;
+import org.safs.sockets.DebugListener;
 import org.safs.text.FileUtilities;
 import org.safs.tools.CaseInsensitiveFile;
 
@@ -51,6 +86,26 @@ public class CommonLib {
 	public static final String DIR_ELIPSE_PLUGINS 	="plugins";
 	/** '<b>safsupdate.jar</b>' */
 	public static final String JAR_SAFSUPDATE 	="safsupdate.jar";
+	/** '<b>jna-4.2.2.jar</b>' required by safsupdate.jar */
+	public static final String JAR_JNA 			="jna-4.2.2.jar";
+	/** '<b>jna-platform-4.2.2.jar</b>' required by safsupdate.jar */
+	public static final String JAR_JNA_PLATFORM	="jna-platform-4.2.2.jar";
+	/** '<b>win32-x86.jar</b>' required by safsupdate.jar */
+	public static final String ZIP_WIN32_86 	="win32-x86.zip";
+
+	/** An array of files to copy from folder 'libs' to 'backup' for updating.
+	 * [{@link #JAR_JNA}, {@link #JAR_JNA_PLATFORM}, {@link #JAR_SAFSUPDATE}, {@link #ZIP_WIN32_86} ]
+	 */
+	public static final String[] UPDATER_FILES 	= {JAR_SAFSUPDATE, JAR_JNA, JAR_JNA_PLATFORM, ZIP_WIN32_86};
+
+	/** '<b>eclipse.ini</b>' */
+	public static final String FILE_ELIPSE_INI 	="eclipse.ini";
+
+	/** '<b>.bak</b>' */
+	public static final String SUFFIX_BAK 	=".bak";
+
+	/** '<b>-vm</b>' */
+	public static final String OPTION_VM_ELIPSE_INI 	="-vm";
 
 	private static Shell shell = null;
 	private static IPreferenceStore store = null;
@@ -68,25 +123,6 @@ public class CommonLib {
 	 * @see #refreshBuildPath()
 	 */
 	public static File getLatestSeleniumServerJARFile() throws ExecutionException{
-		//This has been checked when starting SeleniumPlus (loading plugin), see Activator.java#earlyStartup(). We don't need to check again.
-//		String seleniumdir = System.getenv(BaseProject.SELENIUM_PLUS_ENV);
-//
-//		if (seleniumdir == null || seleniumdir.length() == 0) {
-//			Activator
-//					.log("RefreshBuildPath path cannot deduce SELENIUM_PLUS Environment Variable/Installation Directory.");
-//			throw new ExecutionException(
-//					"RefreshBuildPath cannot deduce SELENIUM_PLUS Environment Variable/Installation Directory.");
-//		}
-//
-//		File rootdir = new CaseInsensitiveFile(seleniumdir).toFile();
-//		if (!rootdir.isDirectory()) {
-//			Activator
-//					.log("RefreshBuildPath cannot deduce SELENIUM_PLUS install directory at: "
-//							+ rootdir.getAbsolutePath());
-//			throw new ExecutionException(
-//					"RefreshBuildPath cannot deduce SELENIUM_PLUS install directory at: "
-//							+ rootdir.getAbsolutePath());
-//		}
 
 		File libsdir = new CaseInsensitiveFile(Activator.seleniumhome, DIR_LIBS).toFile();
 
@@ -96,6 +132,7 @@ public class CommonLib {
 		}
 
 		File[] files = libsdir.listFiles(new FilenameFilter() {
+			@Override
 			public boolean accept(File dir, String name) {
 				try {
 					return name.toLowerCase().startsWith(BaseProject.SELENIUM_SERVER_JAR_PART_NAME);
@@ -415,6 +452,7 @@ public class CommonLib {
 			try {
 				boolean isSeleniumPlus = refreshBuildPath(iP, latestJars);
 				if(isSeleniumPlus){
+					BaseProject.refreshLog4jConfigFile(iP);
 					updatedProject++;
 				}else{
 					nonSelProject++;
@@ -459,16 +497,60 @@ public class CommonLib {
 		return store;
 	}
 
-	private static String getJavaExe(String seleniumhome){
-		if(javaexe==null){
-			File javadir = new CaseInsensitiveFile(seleniumhome, "Java/jre/bin").toFile();
-			if(javadir.isDirectory()){
-				javaexe = javadir.getAbsolutePath()+"/java";
-			}else{
+	/**
+	 * @param seleniumhome String, the SeleniumPlus installation folder
+	 * @param updateJRE boolean, Indicates if we are going to update "embedded JRE".
+	 * @return String, the Java executable
+	 */
+	private static String getJavaExe(String seleniumhome, boolean updateJRE){
+		if(javaexe==null || updateJRE){
+
+			if(embeddedJRE.isDirectory()){
+				File jreBinFolder = null;
+
+				if(updateJRE){
+					//copy the JRE to a temporary folder so that we can update the "embedded JRE"
+					File tempjre = getTempFolder(tempJREFolderName+".for.script");
+
+					try {
+						Activator.log("copying JRE from '"+embeddedJRE.getCanonicalPath()+"' to '"+tempjre.getCanonicalPath()+"' ...");
+						FileUtilities.copyDirectoryRecursively(embeddedJRE, tempjre);
+						jreBinFolder = new CaseInsensitiveFile(tempjre, "bin").toFile();
+					} catch (Exception e) {
+						Activator.error("Met "+e.toString());
+					}
+				}else{
+					jreBinFolder = new CaseInsensitiveFile(embeddedJRE, "bin").toFile();
+				}
+
+				if(jreBinFolder!=null && jreBinFolder.isDirectory()){
+					javaexe = jreBinFolder.getAbsolutePath()+File.separator+"java";
+				}
+			}
+
+			if(javaexe==null){
 				javaexe = "java";
 			}
 		}
+
 		return javaexe;
+	}
+
+	public static void main(String[] args){
+		IndependantLog.setDebugListener(new DebugListener(){
+			@Override
+			public String getListenerName() {
+				return "CommonLib.DebugListener";
+			}
+
+			@Override
+			public void onReceiveDebug(String message) {
+				System.out.println(message);
+			}
+		});
+
+		String javaexe = getJavaExe(Activator.seleniumhome, true);
+		System.out.println(javaexe);
 	}
 
 	/**
@@ -494,8 +576,7 @@ public class CommonLib {
 	}
 
 	public static String getPluginDir() throws ExecutionException{
-		String eclipseDir = System.getProperty("user.dir");//SeleniumPlus embedded Eclipse home directory
-		File plugindir = new CaseInsensitiveFile(eclipseDir, DIR_ELIPSE_PLUGINS).toFile();
+		File plugindir = new CaseInsensitiveFile(getEclipseHome(), DIR_ELIPSE_PLUGINS).toFile();
 
 		if(!plugindir.isDirectory()){
 			Activator.log("UpdateSeleniumPlus cannot deduce valid SELENIUM_PLUS/plugins directory at: "+plugindir.getAbsolutePath());
@@ -506,7 +587,7 @@ public class CommonLib {
 	}
 
 	/**
-	 * Copy {@link #JAR_SAFSUPDATE} from seleniumhome/libs to seleniumhome/update_bak/libs.
+	 * Copy {@link #UPDATER_FILES} from seleniumhome/libs to seleniumhome/update_bak/libs.
 	 */
 	public static void copyUpdateJar(String seleniumhome) throws ExecutionException, IOException{
 		File libsdir = new CaseInsensitiveFile(seleniumhome, DIR_LIBS).toFile();
@@ -521,11 +602,13 @@ public class CommonLib {
 			update_bak_libs_dir.mkdir();
 		}
 
-		//copy the safsupdate.jar to a backup folder and use the copied-safsupdate.jar to do the update work
-		File safsupdate_jar = new CaseInsensitiveFile(libsdir, JAR_SAFSUPDATE).toFile();
-		File safsupdate_backup_jar = new CaseInsensitiveFile(update_bak_libs_dir, JAR_SAFSUPDATE).toFile();
-		FileUtilities.copyFileToFile(safsupdate_jar, safsupdate_backup_jar);
-
+		//copy the safsupdate.jar, jna-4.2.2.jar, jna-platform-4.2.2.jar and win32-x86.zip
+		//to a backup folder and use the copied-safsupdate.jar to do the update work
+		for(String name: UPDATER_FILES){
+			File updater = new CaseInsensitiveFile(libsdir, name).toFile();
+			File updater_backup = new CaseInsensitiveFile(update_bak_libs_dir, name).toFile();
+			FileUtilities.copyFileToFile(updater, updater_backup);
+		}
 	}
 
 	/**
@@ -558,15 +641,277 @@ public class CommonLib {
 		return timeout;
 	}
 
+	/** The SeleniumPlus Eclipse folder, it normally is %SELENIUM_PLUS%\eclipse\ */
+	private static String eclipseHome = null;
+	public static String getEclipseHome(){
+		if(eclipseHome==null){
+			//SeleniumPlus embedded Eclipse home directory
+			eclipseHome = System.getProperty("user.dir");
+		}
+
+		return eclipseHome;
+	}
+
+	/** The file represents the embedded 32 bits Java folder */
+	private static final  File embeddedJava = new CaseInsensitiveFile(Activator.seleniumhome, "Java").toFile();
+	/** The file represents the embedded 32 bits JRE folder */
+	private static final  File embeddedJRE = new CaseInsensitiveFile(Activator.seleniumhome, "Java/jre").toFile();
+	/** The file represents the embedded 64 bits JRE folder */
+	private static final File embeddedJRE64 = new CaseInsensitiveFile(Activator.seleniumhome, "Java64/jre").toFile();
+
+	/** "safs.jre" the temporary folder to hold the 32 bits Java */
+	private static final String tempJavaFolderName = "safs.java";
+	/** "safs.jre" the temporary folder to hold the 32 bits JRE */
+	private static final String tempJREFolderName = "safs.jre";
+	/** "safs.jre64" the temporary folder to hold the 64 bits JRE */
+	private static final String tempJRE64FolderName = "safs.jre64";
+
+	/** The file represents the embedded eclipse's configuration file eclipse.ini */
+	private static final File eclipseINIFile = new CaseInsensitiveFile(getEclipseHome(), FILE_ELIPSE_INI).toFile();
+	/** The backup file of the embedded eclipse's configuration file eclipse.ini */
+	private static final File eclipseINIFileBackup = new CaseInsensitiveFile(eclipseINIFile.getAbsolutePath()+SUFFIX_BAK).toFile();
+
+	/**
+	 * Create a clean temporary folder. The existing temporary will be deleted.
+	 * @param folderName String, the folder name.
+	 * @return File, the temporary folder. It might be null.
+	 */
+	private static File getTempFolder(String folderName){
+		File tempFolder = null;
+
+		try {
+			tempFolder = new File(System.getProperty("java.io.tmpdir"), folderName);
+			FileUtilities.deleteDirectoryRecursively(tempFolder.getAbsolutePath(), false);
+			tempFolder.mkdirs();
+		} catch (Exception e) {
+			Activator.error("Met "+e.toString());
+		}
+
+		if(tempFolder==null || !tempFolder.exists() || !tempFolder.isDirectory()){
+			try {
+				tempFolder = Files.createTempDirectory(folderName).toFile();
+			} catch (IOException e) {
+				Activator.error("Met "+e.toString());
+			}
+		}
+
+		return tempFolder;
+	}
+
+	/**
+	 * SeleniumPlus Eclipse IDE needs to be restart if it is using "embedded JRE" (specified in the %SELENIUM_PLUS%\eclipse\eclipse.ini)<br>
+	 * This method will check eclipse.ini file to see if the "embedded JRE" is being used.<br>
+	 * If "embedded JRE" is being used, this method will copy it to a temporary folder; and modify<br>
+	 * eclipse.ini file to use the JRE in temporary folder; Finally stop the IDE and terminate the JVM.<br>
+	 *
+	 * @param updateJRE boolean, indicates if we want to update the embedded Java/JRE
+	 * @return boolean, indicates if we still want to update the embedded Java/JRE
+	 * @throws IOException
+	 * @see {@link #updateLibrary(String, int)}
+	 * @see #restoreJRESetting()
+	 */
+	private static boolean modifyEclipseINI(boolean updateJRE) throws IOException{
+
+		if (updateJRE) {
+			String configedJVMString = null;
+			File configedJVMFile = null;
+			File embeddedJREInUse = null;
+			File tempJREDir = null;
+			String tempJREFile = null;
+			int jvmLine = -1;//The line number in the eclipse.ini where the JVM is specified.
+			//Read the eclipse.ini to check what JRE is being used.
+
+			String[] contents = FileUtilities.readLinesFromFile(eclipseINIFile.getAbsolutePath());
+			for(int i=0;i<contents.length;i++){
+				if(OPTION_VM_ELIPSE_INI.equals(contents[i].trim())){
+					jvmLine = i+1;
+					if(jvmLine<contents.length){
+						configedJVMString = contents[jvmLine];
+						break;
+					}
+				}
+			}
+			if(configedJVMString!=null){
+				configedJVMFile = new File(configedJVMString);
+				if(!configedJVMFile.exists()){
+					//maybe jvm is specified as relative path "../Java64/jre/bin/javaw.exe"
+					configedJVMFile = new File(getEclipseHome(), configedJVMString);
+				}
+				//Get the canonical file so that the file path will be canonical so that
+				//the comparison with predefined embedded Java/JRE will give us a correct answer
+				configedJVMFile = configedJVMFile.getCanonicalFile();
+
+				if(configedJVMFile.exists()){
+					Activator.log("Current Eclipse JVM '"+configedJVMFile.getAbsolutePath()+"'");
+					if(configedJVMFile.toPath().startsWith(embeddedJRE.toPath())){
+						embeddedJREInUse = embeddedJRE;
+						tempJREDir = getTempFolder(tempJREFolderName);
+					}else if(configedJVMFile.toPath().startsWith(embeddedJava.toPath())){
+						embeddedJREInUse = embeddedJava;
+						tempJREDir = getTempFolder(tempJavaFolderName);
+					}else if(configedJVMFile.toPath().startsWith(embeddedJRE64.toPath())){
+						embeddedJREInUse = embeddedJRE64;
+						tempJREDir = getTempFolder(tempJRE64FolderName);
+					}else{
+						Activator.log("SeleniumPlus embedded JRE is not being used.");
+					}
+				}else{
+					Activator.warn("The JVM '"+configedJVMFile.getAbsolutePath()+"' does NOT exist.");
+				}
+			}else{
+				Activator.log("NO JVM has been specified for SeleniumPlus Eclipse IDE.");
+			}
+
+			if(embeddedJREInUse!=null && tempJREDir!=null){
+				Activator.log("SeleniumPlus embedded JRE '"+embeddedJREInUse.getAbsolutePath()+"' is being used.");
+
+				Object[] options = {
+						"Yes",
+						"No"
+				};
+				int option = TopMostOptionPane.showOptionDialog(null,
+								"SeleniumPlus embedded Java is being used. Do you want to update it?\n\n"+
+								"If [Yes], then eclipse config file '"+eclipseINIFile+"' will be modified,\n"+
+							    "the original config file will be copied to backup file '"+eclipseINIFileBackup+"'\n"+
+								"and SeleniumPlus IDE will be terminated.\n"+
+								"You need to start the SelniumPlus and update again.\n\n",
+								"Embedded JRE Update Requires Restart Eclipse",
+								JOptionPane.YES_NO_OPTION,
+								JOptionPane.QUESTION_MESSAGE,
+								null,
+								options,
+								options[0]);
+
+				if(JOptionPane.YES_OPTION == option){
+					//copy the "embedded JRE" to another place 'tempJREDir'
+					FileUtilities.copyDirectoryRecursively(embeddedJREInUse, tempJREDir);
+
+					//backup eclipse.ini file
+					FileUtilities.copyFileToFile(eclipseINIFile, eclipseINIFileBackup);
+
+					//Before restarting, modify the eclipse.ini to use the copied "embedded JRE"
+					String relativeJVMPath = configedJVMFile.getAbsolutePath().substring(embeddedJREInUse.getAbsolutePath().length());
+					tempJREFile = new File(tempJREDir, relativeJVMPath).getAbsolutePath();
+					contents[jvmLine] = tempJREFile;
+					FileUtilities.writeCollectionToUTF8File(eclipseINIFile.getAbsolutePath(), Arrays.asList(contents));
+
+					//Stop the Eclipse IDE
+					PlatformUI.getWorkbench().close();
+					//Exit the JVM (SeleniumPlus embedded JRE) being used.
+					System.exit(0);
+
+					//After restarting, change the eclipse.ini back to use the original "embedded JRE"
+
+				}else{
+					//Choose NO, we are not going to update embedded JRE
+					updateJRE = false;
+				}
+			}//embeddedJVMInUse==null, so we are not using embedded JVM, return the updateJRE as it is
+		}//no updateJRE, return updateJRE as it is
+
+		return updateJRE;
+	}
+
+	/**
+	 * When updating library, we might also have updated the JRE and modified the eclipse.ini to use a temporary
+	 * JRE. After update, We need to modify the eclipse.ini again to set back the "-vm setting" to use the
+	 * "embedded Java/JRE", which can be got from the backup file eclipse.ini.bak.
+	 *
+	 * @throws IOException
+	 * @see {@link #updateLibrary(String, int)}
+	 * @see #modifyEclipseINI(boolean)
+	 */
+	private static void restoreJRESetting() throws IOException{
+		String configedJVMString = null;
+		String backupConfigedJVMString = null;
+
+		int jvmLine = -1;//The line number in the eclipse.ini where the JVM is specified.
+
+		//Read the eclipse.ini to check what JRE is being used.
+		String[] contents = FileUtilities.readLinesFromFile(eclipseINIFile.getAbsolutePath());
+		for(int i=0;i<contents.length;i++){
+			if(OPTION_VM_ELIPSE_INI.equals(contents[i].trim())){
+				jvmLine = i+1;
+				if(jvmLine<contents.length){
+					configedJVMString = contents[jvmLine];
+					break;
+				}
+			}
+		}
+
+		//Read the backup file eclipse.ini.bak to get the original JRE setting
+		if(eclipseINIFileBackup.exists()){
+			String[] backupContents = FileUtilities.readLinesFromFile(eclipseINIFileBackup.getAbsolutePath());
+			for(int i=0;i<backupContents.length;i++){
+				if(OPTION_VM_ELIPSE_INI.equals(backupContents[i].trim())){
+					if((i+1)<backupContents.length){
+						backupConfigedJVMString = backupContents[i+1];
+						break;
+					}
+				}
+			}
+		}
+
+		if(configedJVMString!=null && backupConfigedJVMString!=null && !backupConfigedJVMString.equals(configedJVMString)){
+			Activator.log("SeleniumPlus Eclipse IDE is using JRE '"+configedJVMString+"'.");
+			Activator.log("We are going to change that JRE back to the original JRE '"+backupConfigedJVMString+"'.");
+
+			Object[] options = {
+					"Yes",
+					"No"
+			};
+			int option = TopMostOptionPane.showOptionDialog(null,
+					        "SeleniumPlus Eclipse IDE is using JRE '"+configedJVMString+"'\n"+
+					        "Do you want to change it back to the original JRE '"+backupConfigedJVMString+"'?\n\n"+
+							"If [Yes], then eclipse config file '"+eclipseINIFile+"' will be modified,\n"+
+							"the backup file '"+eclipseINIFileBackup+"' will be deleted.\n"+
+							"This modification will not take effect until the Eclipse get restarted.\n\n",
+							"Use bakcup Embedded JRE: Requires Restart Eclipse",
+							JOptionPane.YES_NO_OPTION,
+							JOptionPane.QUESTION_MESSAGE,
+							null,
+							options,
+							options[0]);
+
+			if(JOptionPane.YES_OPTION == option){
+				//The eclipse.ini file will be modified to use the original JRE, but it will not take effect until the Eclipse gets restarted
+				contents[jvmLine] = backupConfigedJVMString;
+				FileUtilities.writeCollectionToUTF8File(eclipseINIFile.getAbsolutePath(), Arrays.asList(contents));
+
+				//Delete the backup file.
+				if(!eclipseINIFileBackup.delete()){
+					Activator.warn("Failed to delete the backup eclipse.ini file '"+eclipseINIFileBackup.getAbsolutePath()+"'");
+				}
+
+			}else{
+				Activator.log("Chose NO, the configurated JRE will NOT be changed back to its original value!");
+			}
+		}else{
+			Activator.log("There is no need to replace the configedJVMString="+configedJVMString+"\n by \nbackupConfigedJVMString="+backupConfigedJVMString);
+		}
+
+	}
+
 	public static int updateLibrary(String destdir, int timeout) throws URISyntaxException, ExecutionException, IOException{
 		if(!getPreferenceStore().getBoolean(PreferenceConstants.BOOLEAN_VALUE_LIB)){
 			return UPDATE_CODE_NON_ENABLED;
 		}
 
+		boolean updateJRE = getPreferenceStore().getBoolean(PreferenceConstants.BOOLEAN_VALUE_UPDATE_JRE);
+		//If we are going to update the JRE, then we might need to restart the Eclipse firstly
+		//as the SeleniumPlus IDE may start using the "embedded JRE" (specified in the %SELENIUM_PLUS%\eclipse\eclipse.ini)
+		updateJRE = modifyEclipseINI(updateJRE);
+
 		String url = getPreferenceStore().getString(PreferenceConstants.UPDATESITE_LIB_URL);
 		url = url==null ? null: url.trim();
 
-		return update(true, true, "SeleniumPlus Library Update", url, destdir, timeout);
+		int result = update(true, true, updateJRE, "SeleniumPlus Library Update", url, destdir, timeout);
+
+		//we need to change the eclipse.ini to use the "embedded Java/JRE" instead of the temporary one
+		//we can get that setting from the backup of eclipse.ini
+		restoreJRESetting();
+
+		return result;
 	}
 
 	public static int updateSource(String destdir, int timeout) throws URISyntaxException, ExecutionException, IOException{
@@ -577,7 +922,7 @@ public class CommonLib {
 		String url = getPreferenceStore().getString(PreferenceConstants.UPDATESITE_SOURCECODE_URL);
 		url = url==null ? null: url.trim();
 
-		return update(true, true, "SeleniumPlus Source Code Update", url, destdir, timeout);
+		return update(true, true, false, "SeleniumPlus Source Code Update", url, destdir, timeout);
 	}
 
 	public static int updatePlugin(String destdir, int timeout) throws URISyntaxException, ExecutionException, IOException{
@@ -589,7 +934,7 @@ public class CommonLib {
 		String url = getPreferenceStore().getString(PreferenceConstants.UPDATESITE_PLUGIN_URL);
 		url = url==null ? null: url.trim();
 
-		int plugin_update = update(false, false, "SeleniumPlus Plugin Update", url, destdir, timeout);
+		int plugin_update = update(false, false, false, "SeleniumPlus Plugin Update", url, destdir, timeout);
 
 		if (plugin_update > 0) {
 			Object[] options = {
@@ -615,17 +960,29 @@ public class CommonLib {
 		return plugin_update;
 	}
 
-	private static int update(boolean recursvie, boolean allTypes, String title,
-			                  String sourceURL, String destdir, int timeout) throws URISyntaxException, ExecutionException, IOException{
-		return update(getShell(), getJavaExe(Activator.seleniumhome), recursvie, recursvie, title,
-				getUpdateJar(Activator.seleniumhome), sourceURL, destdir, timeout);
+	private static int update(boolean recursvie, boolean allTypes, boolean updateJRE, String title,
+			                  String sourceURL, String destdir, int timeout, String... extraParams) throws URISyntaxException, ExecutionException, IOException{
+		List<String> params = new ArrayList<String>();
+		if(!updateJRE){
+			//If we don't update JRE, then ignore the sub folder 'Java' and 'Java64' of SeleniumPlus
+			//TODO Will use the constant LibraryUpdate.ARG_PREFIX_E_SEP later, sometimes the update fails to update seleniumplus.jar, and we cannot get that constant available
+			//params.add(LibraryUpdate.ARG_PREFIX_E+"Java"+LibraryUpdate.ARG_PREFIX_E_SEP+"Java64");
+			params.add(LibraryUpdate.ARG_PREFIX_E+"Java;Java64");
+		}
+		if(extraParams!=null){
+			for(String param: extraParams){
+				params.add(param);
+			}
+		}
 
+		return update(getShell(), getJavaExe(Activator.seleniumhome, updateJRE), recursvie, allTypes, title,
+				getUpdateJar(Activator.seleniumhome), sourceURL, destdir, timeout, params.toArray(new String[0]));
 	}
 
 	private static int update(Shell shell, String javaexe,
 			                  boolean recursvie, boolean allTypes,
 			                  String title,
-			                  String safsupdate_jar, String sourceURL, String destdir, int timeout) throws URISyntaxException, ExecutionException{
+			                  String safsupdate_jar, String sourceURL, String destdir, int timeout, String... extraParams) throws URISyntaxException, ExecutionException{
 
 		String proxySettings = null;
 		proxySettings = getProxySettings(new URI(sourceURL));
@@ -643,6 +1000,9 @@ public class CommonLib {
 				" -t:\"" + destdir +"\""+
 				" -b:\"" + backupdir+"\""
 				;
+		for(String extraParam: extraParams){
+			cmdline += " "+extraParam+" ";
+		}
 
 		if(! shell.getMinimized()) shell.setMinimized(true);
 		Activator.log("Launching "+title+" with cmdline: "+ cmdline);
@@ -657,6 +1017,58 @@ public class CommonLib {
 		if(shell.getMinimized()) shell.setMinimized(false);
 
 		return updateResult;
+	}
+
+	/**
+	 * Update/Install the ghostscript tool.<br>
+	 * It is strongly recommended to call this after {@link #updateLibrary(String, int)}, which will
+	 * put necessary assets (such as tool's installer, dependency jar files) into the SAFS/SeleniumPlus installation directory.<br>
+	 *
+	 * @param safsdir String, the SAFS/SeleniumPlus installation directory, where we can find the tool's installer
+	 * @param tooldir String, the directory to install the tool. It can be null, the tool will be installed into its default directory.
+	 * @param timeout int, the timeout in seconds to wait the installation
+	 * @param silent boolean, if the tool's installer works in silent mode
+	 * @param verbose boolean, if the installer works in verbose mode
+	 * @param debug boolean, if the installer works in debug mode
+	 * @param extraParams String[], more extra parameters
+	 * @return boolean, if the installation succeeds
+	 */
+	public static boolean updateGhostscript(String safsdir, String tooldir, int timeout, boolean silent, boolean verbose, boolean debug, String... extraParams){
+
+		Shell shell = getShell();
+		String javaexe = getJavaExe(safsdir, false);
+
+		//We have finished updating library, so we use %SELNIUM_PLUS%\libs\safsupdate.jar
+		String safsupdate_jar = new CaseInsensitiveFile(safsdir, DIR_LIBS+File.separator+JAR_SAFSUPDATE).getAbsolutePath();
+
+		//java org.safs.install.GhostScriptInstaller -safs safsHome [-u] [-installdir home] [-silent] [-v] [-debug]
+		String installer = GhostScriptInstaller.class.getName();
+		String cmdline = javaexe +
+				" -classpath "+ safsupdate_jar +
+				" " + installer+
+				" " + InstallerImpl.ARG_SAFS_DIR + " "+safsdir +
+				" " + (tooldir!=null? InstallerImpl.ARG_INSTALLDIR+" \""+tooldir+"\"":"")+
+				" " + (silent? InstallerImpl.ARG_SILENT:"")+
+				" " + (verbose? InstallerImpl.ARG_VERBOSE:"")+
+				" " + (debug? InstallerImpl.ARG_DEBUG:"")
+				;
+		for(String extraParam: extraParams){
+			cmdline += " "+extraParam+" ";
+		}
+
+		if(! shell.getMinimized()) shell.setMinimized(true);
+		Activator.log("Launching "+installer+" with cmdline: "+ cmdline);
+
+		int updateResult = runCommand(cmdline, timeout);
+		if(shell.getMinimized()) shell.setMinimized(false);
+
+		if(updateResult >= 0){
+			Activator.log(installer+" exited normally.");
+			return true;
+		}else{
+			Activator.error(installer+" did NOT exit normally with code "+updateResult);
+			return false;
+		}
 	}
 
 	/**
@@ -708,51 +1120,32 @@ public class CommonLib {
 	public static final int UPDATE_CODE_NON_ENABLED	= -3;
 
 	/**
-	 *
-	 * @param cmd
-	 * @param timeout
+	 * @param cmd String, the command to run
+	 * @param timeout int, the timeout in seconds to wait. It can be {@link ConsumOutStreamProcess#WAIT_FOREVER}.
 	 * @return exitcode<br>
 	 * {@link #UPDATE_CODE_ERROR} error occurred.<br>
 	 * {@link #UPDATE_CODE_USER_CANCEL} user cancelled.<br>
 	 * 0/+N number of modified files.
 	 */
 	private static int runCommand(String cmd, int timeout){
-
 		int exitcode = UPDATE_CODE_ERROR;
-		try {
 
-			Process process = Runtime.getRuntime().exec(cmd);
-			long now = System.currentTimeMillis();
-		    long timeoutInMillis = 1000L * timeout;
-		    long finish = now + timeoutInMillis;
+		ConsumOutStreamProcess process = new ConsumOutStreamProcess(cmd, true, true);
+		process.setTimeout(timeout);
+		exitcode = process.start();
 
-		    while(isAlive(process)){
-
-		    	Thread.sleep(10);
-		    	if ( System.currentTimeMillis() > finish) {
-		    		process.destroy();
-		    		TopMostOptionPane.showConfirmDialog(null, "Update process timeout.\n"
-		    				+ "It could be slow network connection or \n"
-		    				+ "Not enough timeout set into Selenium+ preference.",
-                            "Update timeout", JOptionPane.CLOSED_OPTION);
-		    		return UPDATE_CODE_ERROR;
-		    	}
-		    }
-		    try{ exitcode = process.exitValue();}catch(Exception ignore){}
-		} catch (Exception e) {
-			Activator.log("Update failed: " + e.getMessage());
-			return UPDATE_CODE_ERROR;
+		if(ConsumOutStreamProcess.PROCESS_NORMAL_END==exitcode){
+			return exitcode;
 		}
-		return exitcode;
-	}
 
-	private static boolean isAlive(Process p){
-		try {
-			p.exitValue();
-			return false;
-		} catch (IllegalThreadStateException  e) {
-			return true;
+		if(ConsumOutStreamProcess.PROCESS_COMMAND_TIMEOUT==exitcode){
+			TopMostOptionPane.showConfirmDialog(null, "Update process timeout.\n"
+					+ "It could be slow network connection or \n"
+					+ "Not enough timeout set into Selenium+ preference.",
+					"Update timeout", JOptionPane.CLOSED_OPTION);
 		}
+
+		return UPDATE_CODE_ERROR;
 	}
 
 	private static boolean fileExist(String filename){

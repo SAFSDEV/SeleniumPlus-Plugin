@@ -19,29 +19,33 @@ package com.sas.seleniumplus.preferences;
 
 import java.util.LinkedHashMap;
 
-import org.eclipse.jface.preference.IntegerFieldEditor;
+import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 
 import com.sas.seleniumplus.Activator;
 import com.sas.seleniumplus.CommonLib;
 
-public class RemoteServer extends FieldEditorPreferencePageDefault
+public class Documents extends FieldEditorPreferencePageDefault
 						  implements IWorkbenchPreferencePage {
 
-	private static final String[] integerFieldEditorNames = {
-		PreferenceConstants.SERVER_TIMEOUT,
-		PreferenceConstants.BROWSER_TIMEOUT
+	private static final String[] stringFieldEditorNames = {
+		PreferenceConstants.SAFS_DOC_BASE_URL,
+		PreferenceConstants.SAFS_DOC_KEYWORDS,
+		PreferenceConstants.SAFS_DOC_SELENIUMPLUS,
+		PreferenceConstants.SAFS_DOC_XPATH_GROUP,
+		PreferenceConstants.SAFS_DOC_XPATH_TABLE,
+		PreferenceConstants.SAFS_DOC_WHATSNEW
 	};
 
-	public RemoteServer(){
+	public Documents(){
 		super(GRID);
 	}
 
 	@Override
 	public void init(IWorkbench workbench) {
 		setPreferenceStore(CommonLib.getPreferenceStore());
-	    setDescription(Activator.getResource(PreferenceConstants.PAGE_DESCRIPTION_REMOTE_SERVER));
+	    setDescription(Activator.getResource(PreferenceConstants.PAGE_DESCRIPTION_SAFS_DOCUMENTS));
 	}
 
 	@Override
@@ -49,8 +53,8 @@ public class RemoteServer extends FieldEditorPreferencePageDefault
 		LinkedHashMap<String, Class<?>> fieldEditorsToAdd =  new LinkedHashMap<String, Class<?>>();
 
 		//Add IntegerFieldEditors
-		for(String integerFieldEditorName:integerFieldEditorNames){
-			fieldEditorsToAdd.put(integerFieldEditorName, IntegerFieldEditor.class);
+		for(String stringFieldEditorName:stringFieldEditorNames){
+			fieldEditorsToAdd.put(stringFieldEditorName, StringFieldEditor.class);
 		}
 
 		return fieldEditorsToAdd;

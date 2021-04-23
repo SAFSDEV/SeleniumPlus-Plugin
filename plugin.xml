@@ -34,6 +34,15 @@
             name="Selenium+ Project (Advance)"
             project="true">
       </wizard>
+      <wizard
+            category="customplugin.category.wizards"
+            class="com.sas.seleniumplus.projects.SeleniumProjectWithTestLevelNewWizard"
+            finalPerspective="customplugin.perspective"
+            icon="icons/splus.png"
+            id="customplugin.wizard.new.custom.with.level"
+            name="Selenium+ Project with Test Level"
+            project="true">
+      </wizard>
    </extension>
    <extension
          point="org.eclipse.ui.perspectives">
@@ -156,6 +165,82 @@
                           <test property="org.eclipse.core.resources.name" value="Maps" />
 				               <instanceof value="org.eclipse.core.resources.IFolder" />
                        </adapt>
+                    </iterate>
+                 </with>
+              </visibleWhen>
+           </command>
+           <command
+                 commandId="customplugin.convertSAFSXMLLogToJunitXML"
+                 label="Convert To JUnit"
+                 style="push"
+                 tooltip="Convert a SAFS XML Log to JUnit XML Log">
+              <visibleWhen>
+                 <with
+                       variable="activeMenuSelection">
+                    <iterate
+                          ifEmpty="false">
+                       <and>
+                          <adapt
+                                type="org.eclipse.core.resources.IResource">
+                             <test
+                                   property="org.eclipse.core.resources.name"
+                                   value="*.xml">
+                             </test>
+                             <instanceof
+                                   value="org.eclipse.core.resources.IFile">
+                             </instanceof>
+                          </adapt>
+                          <not>
+                             <adapt
+                                   type="org.eclipse.core.resources.IResource">
+                                <test
+                                      property="org.eclipse.core.resources.name"
+                                      value="*.junit.xml">
+                                </test>
+                                <instanceof
+                                      value="org.eclipse.core.resources.IFile">
+                                </instanceof>
+                             </adapt>
+                          </not>
+                       </and>
+                    </iterate>
+                 </with>
+              </visibleWhen>
+           </command>
+           <command
+                 commandId="customplugin.pushSAFSXMLData"
+                 label="Push Data"
+                 style="push"
+                 tooltip="Push Test Data to SAFS repository (provided by SAFSDataService)">
+              <visibleWhen>
+                 <with
+                       variable="activeMenuSelection">
+                    <iterate
+                          ifEmpty="false">
+                       <and>
+                          <adapt
+                                type="org.eclipse.core.resources.IResource">
+                             <test
+                                   property="org.eclipse.core.resources.name"
+                                   value="*.xml">
+                             </test>
+                             <instanceof
+                                   value="org.eclipse.core.resources.IFile">
+                             </instanceof>
+                          </adapt>
+                          <not>
+                             <adapt
+                                   type="org.eclipse.core.resources.IResource">
+                                <test
+                                      property="org.eclipse.core.resources.name"
+                                      value="*.junit.xml">
+                                </test>
+                                <instanceof
+                                      value="org.eclipse.core.resources.IFile">
+                                </instanceof>
+                             </adapt>
+                          </not>
+                       </and>
                     </iterate>
                  </with>
               </visibleWhen>
@@ -415,6 +500,16 @@
             id="seldoc"
             name="seleniumpluskeywddoc">
       </command>
+      <command
+            defaultHandler="com.sas.seleniumplus.popupmenu.SAFSXMLLogToJunitXML"
+            id="customplugin.convertSAFSXMLLogToJunitXML"
+            name="ConvertSAFSXMLLogToJunitXML">
+      </command>
+      <command
+            defaultHandler="com.sas.seleniumplus.popupmenu.SAFSXMLLogPushedToDataService"
+            id="customplugin.pushSAFSXMLData"
+            name="PushSAFSXMLData">
+      </command>
       
    </extension>   
 	 <extension
@@ -541,6 +636,18 @@
           class="com.sas.seleniumplus.preferences.RemoteServer"
           id="seleniumplus.remoteserver"
           name="Remote Server">
+    </page>
+    <page
+          category="seleniumplus.prefrances"
+          class="com.sas.seleniumplus.preferences.SAFSDataService"
+          id="seleniumplus.safsdataservice"
+          name="SAFS Data Service">
+    </page>
+    <page
+          category="seleniumplus.prefrances"
+          class="com.sas.seleniumplus.preferences.Documents"
+          id="safs.documents"
+          name="SAFS Documents">
     </page>     
  </extension>
  <extension
@@ -550,7 +657,10 @@
     </initializer>
  </extension> 
   
- <extension  point="org.eclipse.ui.startup" />
+ <extension point="org.eclipse.ui.startup" >
+    <startup class="com.sas.seleniumplus.Activator"/>
+ </extension>
+ 
  <extension
        point="org.eclipse.debug.ui.consoleLineTrackers">
     <consoleLineTracker
