@@ -1,3 +1,20 @@
+/**
+ * Copyright (C) SAS Institute, All rights reserved.
+ * General Public License: https://www.gnu.org/licenses/gpl-3.0.en.html
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+**/
 package com.sas.seleniumplus.preferences;
 
 import java.util.HashMap;
@@ -34,22 +51,22 @@ public class UpdateSite
 		super(GRID);
 	}
 
+	/**
+	 * This is a sub-set of PreferenceConstants.intEditorNames
+	 */
 	private static final String[] integerFieldEditorNames = {
 		PreferenceConstants.TIME_OUT
 	};
 
-//	private static final String[] stringFieldEditorNames = {
-//		PreferenceConstants.UPDATESITE_LIB_URL,
-//		PreferenceConstants.UPDATESITE_PLUGIN_URL,
-//		PreferenceConstants.UPDATESITE_SOURCECODE_URL,
-//		PreferenceConstants.UPDATESITE_JAVADOC_URL
-//	};
-
+	/**
+	 * This is a sub-set of PreferenceConstants.booleanEditorNames
+	 */
 	private static final String[] booleanFieldEditorNames = {
 		PreferenceConstants.BOOLEAN_VALUE_LIB,
 		PreferenceConstants.BOOLEAN_VALUE_PLUGIN,
 		PreferenceConstants.BOOLEAN_VALUE_SOURCE_CODE,
-		PreferenceConstants.BOOLEAN_VALUE_JAVADOC
+		PreferenceConstants.BOOLEAN_VALUE_JAVADOC,
+		PreferenceConstants.BOOLEAN_VALUE_UPDATE_JRE
 	};
 
 	@Override
@@ -120,6 +137,7 @@ public class UpdateSite
 	 */
 	protected void enableStringFields(boolean fromPreference, boolean useDefault){
 		String boolEditorName = null;
+		FieldEditor fieldEditor = null;
 		if(fromPreference){
 			boolean enabled = false;
 			IPreferenceStore store = CommonLib.getPreferenceStore();
@@ -128,7 +146,8 @@ public class UpdateSite
 				try{
 					boolEditorName = booleanEditor.getPreferenceName();
 					enabled = useDefault? store.getDefaultBoolean(boolEditorName): store.getBoolean(boolEditorName);
-					boolKeyToStringFields.get(boolEditorName).setEnabled(enabled, getFieldEditorParent());
+					fieldEditor = boolKeyToStringFields.get(boolEditorName);
+					if(fieldEditor!=null) fieldEditor.setEnabled(enabled, getFieldEditorParent());
 				}catch(Exception e){
 					Activator.warn("Failed to enable StringFieldEditors, due to "+e.toString());
 				}
@@ -137,7 +156,8 @@ public class UpdateSite
 			for(FieldEditor booleanEditor: booleanFieldEditors){
 				try{
 					boolEditorName = booleanEditor.getPreferenceName();
-					boolKeyToStringFields.get(boolEditorName).setEnabled(((BooleanFieldEditor)booleanEditor).getBooleanValue(), getFieldEditorParent());
+					fieldEditor = boolKeyToStringFields.get(boolEditorName);
+					if(fieldEditor!=null) fieldEditor.setEnabled(((BooleanFieldEditor)booleanEditor).getBooleanValue(), getFieldEditorParent());
 				}catch(Exception e){
 					Activator.warn("Failed to enable StringFieldEditors, due to "+e.toString());
 				}

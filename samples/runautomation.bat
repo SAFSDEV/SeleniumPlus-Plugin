@@ -1,10 +1,14 @@
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 ::
+@ECHO OFF
 
 setlocal enableDelayedExpansion
-set max=0
-for /f "tokens=1* delims=-.0" %%A in ('dir /b /a-d %SELENIUM_PLUS%\libs\selenium-server-standalone*.jar') do if %%B gtr !max! set max=%%B
-set SELENIUM_SERVER_JAR_LOC=%SELENIUM_PLUS%\libs\selenium-%max%
+REM set max=0
+REM for /f "tokens=1* delims=-.0" %%A in ('dir /b /a-d %SELENIUM_PLUS%\libs\selenium-server-standalone*.jar') do if %%B gtr !max! set max=%%B
+REM set SELENIUM_SERVER_JAR_LOC=%SELENIUM_PLUS%\libs\selenium-%max%
+
+REM Get the latest selenium-server-standalone jar, list the selenium-server-standalone jar in order (by date/time), the last one is the latest. 
+for /f %%A in ('dir %SELENIUM_PLUS%\libs\selenium-server-standalone*.jar /B /O:D') do set SELENIUM_SERVER_JAR_LOC=%%A
 
 set CMDCLASSPATH="%SELENIUM_PLUS%\libs\seleniumplus.jar;%SELENIUM_PLUS%\libs\JSTAFEmbedded.jar;%SELENIUM_SERVER_JAR_LOC%"
 set EXECUTE=%SELENIUM_PLUS%/Java/bin/java

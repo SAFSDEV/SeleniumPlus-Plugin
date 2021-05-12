@@ -1,7 +1,32 @@
+/**
+ * Copyright (C) SAS Institute, All rights reserved.
+ * General Public License: https://www.gnu.org/licenses/gpl-3.0.en.html
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+**/
 package com.sas.seleniumplus;
 /**
  * Developer logs:
- * APR 20, 2017	(Lei Wang)	Load custom-resource-bundle before trying the default one.
+ * APR 20, 2017	(LeiWang)	Load custom-resource-bundle before trying the default one.
+ * MAY 18, 2018	(LeiWang)	Added methods to get .ini ConfigureInterface of a project.
+ *                          Added methods to Initialize/showe 'Selenium Plus Console'.
+ *                          Created 'out' as output stream to 'Selenium Plus Console'.
+ *                          Created 'err' as error output stream to 'Selenium Plus Console'.
+ * MAY 21, 2018	(LeiWang)	Used try-catch block to enclose the code for creating Console, Console's stream and Console's Color to
+ *                          avoid the problems (such as "Cannot load 64-bit SWT libraries on 32-bit JVM") met during the plugin-test.
+ * FEB 26, 2019	(LeiWang)	Added checkDefaultINI(): Adjust %SELENIUM_PLUS%/extra/automation/safstid.ini according to plugin settings.
+ *                                                   Add entries for section [SAFS_DIRECTORIES] if they are not present in %SELENIUM_PLUS%/extra/automation/safstid.ini
  */
 import java.io.File;
 import java.net.URL;
@@ -10,6 +35,7 @@ import java.util.Locale;
 import java.util.ResourceBundle;
 
 import org.eclipse.core.commands.ExecutionException;
+import org.eclipse.core.commands.NotEnabledException;
 import org.eclipse.core.net.proxy.IProxyService;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IFolder;
@@ -31,13 +57,27 @@ import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
+import org.eclipse.ui.console.ConsolePlugin;
+import org.eclipse.ui.console.IConsole;
+import org.eclipse.ui.console.IConsoleConstants;
+import org.eclipse.ui.console.IConsoleManager;
+import org.eclipse.ui.console.IConsoleView;
+import org.eclipse.ui.console.MessageConsole;
+import org.eclipse.ui.console.MessageConsoleStream;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.util.tracker.ServiceTracker;
 import org.safs.StringUtils;
+import org.safs.text.INIFileReadWrite;
+import org.safs.text.INIFileReader;
 import org.safs.tools.CaseInsensitiveFile;
+import org.safs.tools.drivers.ConfigureInterface;
+import org.safs.tools.drivers.ConfigureLocatorInterface;
+import org.safs.tools.drivers.DriverConstant;
+import org.safs.tools.drivers.DriverConstant.DataServiceConstant;
+import org.safs.tools.drivers.DriverConstant.SafsDirectories;
 
 import com.sas.seleniumplus.natures.ProjectNature;
 import com.sas.seleniumplus.preferences.PreferenceConstants;
@@ -75,6 +115,7 @@ public class Activator extends AbstractUIPlugin implements org.eclipse.ui.IStart
 	/**
 	 * @see org.eclipse.ui.IStartup
 	 */
+	@Override
 	public void earlyStartup() {
 		try{
 			checkSeleniumPlusClasspath();
@@ -92,6 +133,85 @@ public class Activator extends AbstractUIPlugin implements org.eclipse.ui.IStart
 		super.start(context);
 		plugin = this;
 		initResourceBundle();
+		checkDefaultINI();
+	}
+
+	/**
+	 * Modify the SAFSTID.INI located in the Se+ installation directory at ./extra/automation/safstid.ini.
+	 * <ol>
+	 * <li>That INI file should be modified to provide the default SAFS Data Service configuration
+	 *     information as found in the Se+ PlugIn preferences.properties file.
+	 *     The ./extra/automation/safstid.ini is served as the default configuration, but the project's configuration
+	 *     file test.ini has the higher priority, it overrides ./extra/automation/safstid.ini.
+	 * <li>Add the section [SAFS_DIRECTORIES] and entries as below:
+	 *     <pre>
+	 *     [SAFS_DIRECTORIES]
+	 *     TESTDIR=Actuals
+	 *     DIFFDIR=Diffs
+	 *     BENCHDIR=Benchmarks
+	 *     LOGDIR=Logs
+	 *     DATADIR=Maps
+	 *     </pre>
+	 * </ol>
+	 */
+	private void checkDefaultINI(){
+		String debugmsg = StringUtils.debugmsg(false);
+
+		INIFileReadWrite iniFile = null;
+
+		try{
+			iniFile = new INIFileReadWrite(new File(seleniumhome+PreferenceConstants.EXTRA_AUTOMATION_FOLDER, "safstid.ini"), INIFileReader.IFR_MEMORY_MODE_STORED);
+
+			//get the "SAFS Data Service URL" from the preference, and use this value to update the default configuration file
+			String dataServiceURL = getResource(PreferenceConstants.SAFS_DATA_SERVICE_URL+PreferenceConstants.SUFFIX_DEFAULT);
+			String actualValue = null;
+			boolean rewriteINI = false;
+			if(StringUtils.isValid(dataServiceURL)){
+				actualValue = iniFile.getAppMapItem(DataServiceConstant.SECTION_NAME, DataServiceConstant.ITEM_SERVER_URL);
+				if(!dataServiceURL.equals(actualValue)){
+					log(debugmsg+" Replacing the "+DataServiceConstant.ITEM_SERVER_URL+"'s value from "+actualValue+" to "+dataServiceURL);
+					iniFile.setAppMapItem(DataServiceConstant.SECTION_NAME, DataServiceConstant.ITEM_SERVER_URL, dataServiceURL);
+					rewriteINI = true;
+				}
+			}
+
+			//Add the [SAFS_DIRECTORIES] entries if they are not present in the default configuration file.
+			actualValue = iniFile.getAppMapItem(SafsDirectories.SECTION_NAME, SafsDirectories.ITEM_BENCHDIR);
+			if(!StringUtils.isValid(actualValue)){
+				iniFile.setAppMapItem(SafsDirectories.SECTION_NAME, SafsDirectories.ITEM_BENCHDIR, SafsDirectories.DEFAULT_BENCHDIR);
+				rewriteINI = true;
+			}
+			actualValue = iniFile.getAppMapItem(SafsDirectories.SECTION_NAME, SafsDirectories.ITEM_DATADIR);
+			if(!StringUtils.isValid(actualValue)){
+				iniFile.setAppMapItem(SafsDirectories.SECTION_NAME, SafsDirectories.ITEM_DATADIR, SafsDirectories.DEFAULT_DATADIR);
+				rewriteINI = true;
+			}
+			actualValue = iniFile.getAppMapItem(SafsDirectories.SECTION_NAME, SafsDirectories.ITEM_DIFFDIR);
+			if(!StringUtils.isValid(actualValue)){
+				iniFile.setAppMapItem(SafsDirectories.SECTION_NAME, SafsDirectories.ITEM_DIFFDIR, SafsDirectories.DEFAULT_DIFFDIR);
+				rewriteINI = true;
+			}
+			actualValue = iniFile.getAppMapItem(SafsDirectories.SECTION_NAME, SafsDirectories.ITEM_LOGDIR);
+			if(!StringUtils.isValid(actualValue)){
+				iniFile.setAppMapItem(SafsDirectories.SECTION_NAME, SafsDirectories.ITEM_LOGDIR, SafsDirectories.DEFAULT_LOGDIR);
+				rewriteINI = true;
+			}
+			actualValue = iniFile.getAppMapItem(SafsDirectories.SECTION_NAME, SafsDirectories.ITEM_TESTDIR);
+			if(!StringUtils.isValid(actualValue)){
+				iniFile.setAppMapItem(SafsDirectories.SECTION_NAME, SafsDirectories.ITEM_TESTDIR, SafsDirectories.DEFAULT_TESTDIR);
+				rewriteINI = true;
+			}
+
+			if(rewriteINI){
+				iniFile.writeINIFile(null);
+			}
+
+		}finally{
+			if(iniFile!=null){
+				try{ iniFile.close(); }catch(Exception e){}
+			}
+		}
+
 	}
 
 	/**
@@ -499,6 +619,129 @@ public class Activator extends AbstractUIPlugin implements org.eclipse.ui.IStart
 			throw new ExecutionException("The SAFS Project root is not a valid directory: "+ rootdir.getPath());
 		}
 		return rootdir;
+	}
+
+	/**
+	 * Detect a file under the selected project.<br>
+	 * @param selectionService ISelectionService, a selected stuff in a project
+	 * @param fileRelativeToProjectRoot String, the name of the file (relative to project's root) to detect.
+	 * @return File, the detected file in the selected project.
+	 * @throws ExecutionException if cannot detect a SeleniumPlus Project
+	 * @throws NotEnabledException if cannot detect the specified file in the project's root.
+	 */
+	public static File getProjectFile(ISelectionService selectionService, String fileRelativeToProjectRoot) throws ExecutionException, NotEnabledException{
+		IProject iproject = getSelectedProject(selectionService);
+		if(iproject == null){
+			throw new NotEnabledException("Cannot detecte a SeleniumPlus Project, please select one.");
+		}
+
+		File rootdir = getProjectLocation(iproject);
+		File file = new CaseInsensitiveFile(rootdir, fileRelativeToProjectRoot).toFile();
+		if(file == null || !file.isFile())
+			throw new ExecutionException("Did not detect a file '"+fileRelativeToProjectRoot+"' under the Project root directory '"+rootdir.getAbsolutePath()+"'.");
+
+		return file;
+	}
+
+	/**
+	 * @return File, the test.ini configuration file in the selected project.
+	 * @throws ExecutionException if cannot detect a SeleniumPlus Project
+	 * @throws NotEnabledException if cannot detect the file 'test.ini' in the project's root.
+	 */
+	private static File getProjectINIFile() throws ExecutionException, NotEnabledException{
+		return getProjectFile(null, BaseProject.TESTINI_FILE);
+	}
+
+	/**
+	 * @return ConfigureInterface for test.ini configuration file in the selected project.
+	 * @throws ExecutionException if cannot detect a SeleniumPlus Project
+	 * @throws NotEnabledException if cannot detect the file 'test.ini' in the project's root.
+	 */
+	public static ConfigureInterface getPorjectConfiguration() throws ExecutionException, NotEnabledException{
+		File iniFile = getProjectINIFile();
+		return getPorjectConfiguration(iniFile.getParent(), iniFile.getName());
+	}
+
+	/**
+	 * Get the ConfigureInterface for 'configPath' under 'rootDir'.
+	 * @param rootDir String, the root directory
+	 * @param configPath String, the relative configuration file
+	 * @return ConfigureInterface
+	 */
+	private static ConfigureInterface getPorjectConfiguration(String rootDir, String configPath){
+		ConfigureLocatorInterface locator = ConfigureLocatorInterface.getConfigureLocator(DriverConstant.DEFAULT_CONFIGURE_LOCATOR);
+		return locator.locateConfigureInterface(rootDir, configPath);
+	}
+
+	private static MessageConsole findConsole(String name) {
+		try{
+			IConsoleManager consoleManager = ConsolePlugin.getDefault().getConsoleManager();
+			IConsole[] consoles = consoleManager.getConsoles();
+			for (int i = 0; i < consoles.length; i++){
+				if(name==null){
+					return (MessageConsole) consoles[i];
+				}
+				if (name.equals(consoles[i].getName()))
+					return (MessageConsole) consoles[i];
+			}
+
+			//no console found, so create a new one
+			if(name==null){
+				name = DEFAULT_CONSOLE;
+			}
+			MessageConsole myConsole = new MessageConsole(name, null);
+			consoleManager.addConsoles(new IConsole[]{myConsole});
+			return myConsole;
+		}catch(Exception e){
+			error(StringUtils.debugmsg(false)+" Failed to initialize console.", e);
+			return null;
+		}
+	}
+
+	/** "SeleniumPlus Plugin Console" */
+	public static final String DEFAULT_CONSOLE = "SeleniumPlus Plugin Console";
+
+	private static boolean defaultConsoleIsShowing = false;
+	private static MessageConsole defaultConsole = null;
+
+	/** The standard output stream to {@link #DEFAULT_CONSOLE}, it might be null. */
+	public static MessageConsoleStream out = null;
+	/** The error output stream to {@link #DEFAULT_CONSOLE}, it might be null */
+	public static MessageConsoleStream err = null;
+
+	static{
+		try{
+			defaultConsole = findConsole(null);
+			out = defaultConsole.newMessageStream();
+			err = defaultConsole.newMessageStream();
+
+			org.eclipse.swt.graphics.Color RED = new org.eclipse.swt.graphics.Color(org.eclipse.swt.widgets.Display.getCurrent (), 255, 0, 0);
+			err.setColor(RED);
+		}catch(Exception e){
+			error(StringUtils.debugmsg(false)+" Failed to initialize console's error/stdout stream.", e);
+		}
+	}
+
+	/**
+	 * Show the {@link #DEFAULT_CONSOLE} on the current active page.<br>
+	 * <font color='red'>Be careful: this will change the current selected item. </font>
+	 */
+	public static void showConsole(){
+		if(!defaultConsoleIsShowing) showConsole(defaultConsole);
+	}
+	/**
+	 * Show the Console on the current active page.<br>
+	 * <font color='red'>Be careful: this will change the current selected item. </font>
+	 * @param console MessageConsole
+	 */
+	private static void showConsole(MessageConsole console){
+		try {
+			IConsoleView view = (IConsoleView) PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().showView(IConsoleConstants.ID_CONSOLE_VIEW);
+			view.display(console);
+			defaultConsoleIsShowing = true;
+		} catch (Exception e) {
+			error(StringUtils.debugmsg(false)+" Failed to show console '"+console.getName()+"'", e);
+		}
 	}
 
 	/**

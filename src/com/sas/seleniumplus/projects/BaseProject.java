@@ -1,8 +1,29 @@
+/**
+ * Copyright (C) SAS Institute, All rights reserved.
+ * General Public License: https://www.gnu.org/licenses/gpl-3.0.en.html
+ * 
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ * 
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+**/
 package com.sas.seleniumplus.projects;
 /**
- * APR 26, 2017	(Lei Wang) Modified createBaseProject(): Use CommonLib.getLatestSeleniumPlusJARS().
+ * APR 26, 2017	(LeiWang) Modified createBaseProject(): Use CommonLib.getLatestSeleniumPlusJARS().
+ * MAY 10, 2018	(LeiWang) Refactored code to easily add file (test source, map, .ini etc.) to the project.
+ * NOV 23, 2018	(LeiWang) Added method addLog4jConfigFile(): create log4j config file for creating project.
+ *
  */
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 
@@ -24,7 +45,12 @@ import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.launching.JavaRuntime;
+import org.safs.Constants;
+import org.safs.android.auto.lib.Console;
 import org.safs.projects.common.projects.callbacks.Callbacks;
+import org.safs.projects.seleniumplus.popupmenu.FileTemplates.IniFileType;
+import org.safs.projects.seleniumplus.popupmenu.FileTemplates.MapFileType;
+import org.safs.projects.seleniumplus.popupmenu.FileTemplates.TestFileType;
 
 import com.sas.seleniumplus.Activator;
 import com.sas.seleniumplus.CommonLib;
@@ -42,16 +68,16 @@ public class BaseProject extends org.safs.projects.seleniumplus.projects.BasePro
 	public static String STAFDIR;
 
 	/** "STAFDIR" */
-	public static String STAFDIR_ENV = "STAFDIR";
+	public final static String STAFDIR_ENV = "STAFDIR";
 	/** "/bin/STAFProc" */
-	public static String STAFPROC_PATH = File.separatorChar+"bin"+ File.separatorChar +"STAFProc";
+	public final static String STAFPROC_PATH = File.separatorChar+"bin"+ File.separatorChar +"STAFProc";
 	/** "SAFSDIR" */
-	public static String SAFSDIR_ENV = "SAFSDIR";
+	public final static String SAFSDIR_ENV = "SAFSDIR";
 
 	/** "tests" */
-	public static String SRC_TESTS_SUBDIR = "tests";
+	public final static String SRC_TESTS_SUBDIR = "tests";
 	/** "suites" */
-	public static String SRC_SUITES_SUBDIR = "suites";
+	public final static String SRC_SUITES_SUBDIR = "suites";
 
 	/** build path jars */
 	public final static String SELENIUMPLUS_JAR = "seleniumplus.jar";
@@ -62,30 +88,30 @@ public class BaseProject extends org.safs.projects.seleniumplus.projects.BasePro
 	/** build path attachment source zip*/
 	public final static String SAFSSELENIUM_PLUS_SOURCE_CORE = "source_core.zip";
 
-
 	/** "/libs/seleniumplus.jar" */
-	public static String SELENIUMPLUS_JAR_PATH = File.separator + "libs"+ File.separator + SELENIUMPLUS_JAR;
+	public final static String SELENIUMPLUS_JAR_PATH = File.separator + "libs"+ File.separator + SELENIUMPLUS_JAR;
 	/** "/lib/safsselenium.jar" */
-	public static String SAFSSELENIUM_JAR_PATH = File.separator + "lib"+ File.separator + SAFSSELENIUM_JAR;
+	public final static String SAFSSELENIUM_JAR_PATH = File.separator + "lib"+ File.separator + SAFSSELENIUM_JAR;
 
 	/** "/bin/JSTAF.jar" */
-	public static String STAF_JAR_PATH = File.separator + "bin"+ File.separator + STAF_JAR;
+	public final static String STAF_JAR_PATH = File.separator + "bin"+ File.separator + STAF_JAR;
 
 	/** "/libs/JSTAFEmbedded.jar" */
-	public static String NOSTAF_JAR_PATH = File.separator + "libs"+ File.separator + JSTAF_EMBEDDDED_JAR;
+	public final static String NOSTAF_JAR_PATH = File.separator + "libs"+ File.separator + JSTAF_EMBEDDDED_JAR;
 
-
+	/** "SeleniumProjectWithTestLevel" */
+	public final static String PROJECTTYPE_TESTLEVEL = "SeleniumProjectWithTestLevel";
 	/** "SeleniumProject" */
-	public static String PROJECTTYPE_SELENIUM = "SeleniumProject";
+	public final static String PROJECTTYPE_SELENIUM = "SeleniumProject";
 	/** "AdvanceProject" */
-	public static String PROJECTTYPE_ADVANCE  = "AdvanceProject";
+	public final static String PROJECTTYPE_ADVANCE  = "AdvanceProject";
 	/** runAutomation.sh */
-	public static String RUNAUTOMATION_UNX_FILE = "runAutomation.sh";
+	public final static String RUNAUTOMATION_UNX_FILE = "runAutomation.sh";
 	/** /samples/runautomation.sh */
-	public static String RUNAUTOMATION_UNX_RESOURCE = "/samples/runautomation.sh";
+	public final static String RUNAUTOMATION_UNX_RESOURCE = "/samples/runautomation.sh";
 
-	public static String MSG_INSTALL_NOT_FOUND = "SeleniumPlus installation not found";
-	public static String MSG_INSTALL_AND_RESTART = " 1. Please install SeleniumPlus.\n" +
+	public final static String MSG_INSTALL_NOT_FOUND = "SeleniumPlus installation not found";
+	public final static String MSG_INSTALL_AND_RESTART = " 1. Please install SeleniumPlus.\n" +
                                                    " 2. Re-run Setup.bat from the SeleniumPlus install directory.\n"+
                                                    " 3. Restart SeleniumPlus.\n";
 	/**
@@ -103,44 +129,88 @@ public class BaseProject extends org.safs.projects.seleniumplus.projects.BasePro
 		Assert.isNotNull(companyName);
 		Assert.isTrue(projectName.trim().length() > 0);
 
+		String testrunPackage = null;
+		String testcyclePackage = null;
+		String testsuitePackage = null;
+		String testcasePackage = null;
+
+		String testBasePackage = null;
 		if (projectType.equalsIgnoreCase(PROJECTTYPE_SAMPLE)) {
 			Callbacks callbacks = new EclipseCallbacks(projectName, location);
 			IProjectHolder projectHolder = (IProjectHolder) org.safs.projects.seleniumplus.projects.BaseProject.createProject(projectName, location, companyName, projectType, callbacks);
 			return projectHolder.getIProject();
+
 		} else if (projectType.equalsIgnoreCase(PROJECTTYPE_SELENIUM)){
 
 			srcDir = SRC_TEST_DIR;
-			testcaseDir = srcDir + "/"+ projectName.toLowerCase() +"/"+ SRC_TESTCASES_SUBDIR;
-			testrunDir =  srcDir + "/"+ projectName.toLowerCase() +"/"+ SRC_TESTRUNS_SUBDIR;
+			testBasePackage = projectName.toLowerCase();
+			testcasePackage = testBasePackage +"."+ SRC_TESTCASES_SUBDIR;
+			testrunPackage =  testBasePackage +"."+ SRC_TESTRUNS_SUBDIR;
 
 		} else if (projectType.equalsIgnoreCase(PROJECTTYPE_ADVANCE)){
 
 			srcDir = SRC_SRC_DIR;
-			testcaseDir = srcDir + "/com/" + companyName.toLowerCase() + "/"+ projectName.toLowerCase()+ "/"+ SRC_TESTS_SUBDIR;
-			testrunDir = srcDir + "/com/" + companyName.toLowerCase() + "/"+ projectName.toLowerCase()+ "/"+ SRC_SUITES_SUBDIR;
+			testBasePackage = "com." + companyName.toLowerCase() + "."+ projectName.toLowerCase();
+			testcasePackage = testBasePackage + "."+ SRC_TESTS_SUBDIR;
+			testrunPackage =  testBasePackage + "."+ SRC_SUITES_SUBDIR;
+
+		}else if (projectType.equalsIgnoreCase(PROJECTTYPE_TESTLEVEL)){
+
+			srcDir = SRC_TEST_DIR;
+			testBasePackage = projectName.toLowerCase();
+			testcyclePackage =  testBasePackage +"."+ SRC_TESTCYCLE_SUBDIR;
+			testsuitePackage =  testBasePackage +"."+ SRC_TESTSUITE_SUBDIR;
+			testcasePackage = testBasePackage +"."+ SRC_TESTCASE_SUBDIR;
 
 		} else {
 			// internal error
+			throw new RuntimeException("Unsupported Project type '"+projectType+"'!");
 		}
 
-		IProject project = createBaseProject(projectName,srcDir,location);
+		IProject project = createBaseProject(projectName, srcDir, location);
 
 		try {
 
 			addNature(project);
 
-			String[] paths = {
-					srcDir,
-					testcaseDir,
-					testrunDir,
-					DATAPOOL_DIR,
-					TEST_DIR,
-					BENCH_DIR,
-					DIF_DIR,
-					LOGS_DIR
-			};
+			/** Create test classes */
+			if(testcyclePackage!=null){//create hierarchical structure (cycle, suite, testcases)
+				/** Create test cycle classes */
+				addTestLevelClass(project.getFolder(FileTemplates.toProjectPath(srcDir, testcyclePackage)), TestFileType.TestCycle, testcyclePackage+"."+TESTCYCLE_FILE, MAPCLASS_FILE, testsuitePackage+"."+TESTSUITE_FILE);
+				/** Create test suite classes */
+				addTestLevelClass(project.getFolder(FileTemplates.toProjectPath(srcDir, testsuitePackage)), TestFileType.TestSuite, testsuitePackage+"."+TESTSUITE_FILE, MAPCLASS_FILE, testcasePackage+"."+TESTCASE_FILE);
+				/** Create test test case classes */
+				addTestLevelClass(project.getFolder(FileTemplates.toProjectPath(srcDir, testcasePackage)), TestFileType.TestCase, testcasePackage+"."+TESTCASE_FILE, MAPCLASS_FILE, null);
 
-			addToProjectStructure(project, paths);
+				/** Create spring configuration file */
+				addSpringConfigFile(project.getFolder(srcDir), testBasePackage);
+			}else if(testrunPackage!=null){//create hierarchical structure (testrun, testcases)
+				/** Create test run classes */
+				addTestLevelClass(project.getFolder(FileTemplates.toProjectPath(srcDir, testrunPackage)), TestFileType.TestRunClass, testrunPackage+"."+TESTRUNCLASS_FILE, MAPCLASS_FILE, testcasePackage+"."+TESTCASECLASS_FILE);
+				/** Create test case classes */
+				addTestLevelClass(project.getFolder(FileTemplates.toProjectPath(srcDir, testcasePackage)), TestFileType.TestClass, testcasePackage+"."+TESTCASECLASS_FILE, MAPCLASS_FILE, null);
+			}
+
+			/**  Map and Map order files */
+			IFolder mapFolder = project.getFolder(DATAPOOL_DIR);
+			addMapFile(mapFolder, MapFileType.Map);
+			addMapFile(mapFolder, MapFileType.MapEn);
+			addMapFile(mapFolder, MapFileType.Order);
+
+			/** create Actual/Bench/Diff/Logs folder */
+			createFolder(project.getFolder(TEST_DIR));
+			createFolder(project.getFolder(BENCH_DIR));
+			createFolder(project.getFolder(DIF_DIR));
+			createFolder(project.getFolder(LOGS_DIR));
+
+			/** create test.ini file */
+			addIniFile(project, IniFileType.Normal);
+
+			/** create command-line script file runAutomation.bat/runAutomation.sh */
+			addStartScriptFile(project);
+
+			/** Create log4j configuration file */
+			addLog4jConfigFile(project.getFolder(srcDir));
 
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -240,153 +310,152 @@ public class BaseProject extends org.safs.projects.seleniumplus.projects.BasePro
 		}
 	}
 
+	private static void addFile(IContainer container, IFile file, InputStream stream) throws CoreException, IOException {
+		if(!container.exists() && (container instanceof IFolder)){
+			createFolder((IFolder) container);
+		}
+
+		if (container.exists()){
+			file.create(stream, true, null);
+			if (stream != null) stream.close();
+		}
+	}
+
 	/**
-	 * Create a folder structure with a parent root, overlay, and a few child
-	 * folders.
+	 * Add test class java file to the test folder of certain test level.<br>
+	 * We suppose the test class file has the format as "&lt;srcFolderName>/&lt;projectname>/&lt;testlevel>/&lt;testClassName>.java".<br>
 	 *
-	 * @param newProject
-	 * @param paths
+	 * @param folder IFolder, the folder holding test classes of certain level (cycle, suite, testcase)
+	 * @param fileType TestFileType, the test class file type.
+	 * @param testClassName String, the full qualified name of the test class
+	 * @param mapName String, the simple (without package part) name of the map file.
+	 * @param childLevelTestClassName String, the full qualified name of the test class of child level. It is null if there is no child level.
 	 * @throws CoreException
+	 * @throws IOException
 	 */
-	private static void addToProjectStructure(IProject newProject,
-			String[] paths) throws CoreException, Exception {
+	private static void addTestLevelClass(IFolder folder, TestFileType fileType, String testClassName, String mapName, String childLevelTestClassName) throws CoreException, IOException{
+		IProject project = folder.getProject();
+		String[] testPackageAndClassname = FileTemplates.splitClassName(testClassName);
 
-		for (String path : paths) {
-			IFolder etcFolders = newProject.getFolder(path);
-			createFolder(etcFolders);
+		//create the full Map class name. The mapPackage is the parent package of the testPackage.
+		String mapPackage = FileTemplates.splitClassName(testPackageAndClassname[0]/* testPackage */)[0];
+		String mapClassName = mapPackage.isEmpty()? mapName : mapPackage + "."+ mapName;
+
+		IFile testclass = folder.getFile(testPackageAndClassname[1] /* simpleTestClassname */ + ".java");
+		InputStream testclassstream = FileTemplates.getTestLevelClass(project.getName(), fileType, testClassName, mapClassName, childLevelTestClassName);
+
+		addFile(folder, testclass, testclassstream);
+	}
+
+	/**
+	 * Add map/order file to the map folder.
+	 * @param folder IFolder, the folder holding map/order files.
+	 * @param fileType MapFileType, the map file type.
+	 * @throws CoreException
+	 * @throws IOException
+	 */
+	private static void addMapFile(IFolder folder, MapFileType fileType) throws CoreException, IOException {
+
+		IFile file = null;
+		String projectName = folder.getProject().getName();
+		InputStream mapstream = FileTemplates.getAppMap(projectName, fileType);
+
+		if(MapFileType.Map.equals(fileType)){
+			file = folder.getFile(projectName+APPMAP_FILE);
+		}else if(MapFileType.MapEn.equals(fileType)){
+			file = folder.getFile(projectName+APPMAP_EN_FILE);
+		}else if(MapFileType.Order.equals(fileType)){
+			file = folder.getFile(APPMAP_ORDER_FILE);
 		}
 
+		addFile(folder, file, mapstream);
+	}
 
-		/**
-		 * Create sample test class
-		*/
-		String testClass = TESTCASECLASS_FILE;
-		IFolder testPkg = newProject.getFolder(paths[1]);
-		String tmp_pkg = testPkg.toString();
-		String packagedir = tmp_pkg.substring(tmp_pkg.indexOf(paths[0]) + paths[0].length() + 1 , tmp_pkg.length());
-		String prjPackage = packagedir;
-		try{ prjPackage = packagedir.substring(0, packagedir.lastIndexOf("/"));}catch(Exception ignore){}
-		String newPackage = packagedir.replaceAll("/", ".");
-		String mapPackage = prjPackage.replaceAll("/",  ".");
-		String mapPkg = mapPackage + "."+ MAPCLASS_FILE;
+	/**
+	 * Add .ini configuration file. It is under the project folder.
+	 * @param project IProject, the project holding the .ini file.
+	 * @param fileType IniFileType, the ini file type
+	 * @throws CoreException
+	 * @throws IOException
+	 */
+	private static void addIniFile(IProject project , IniFileType fileType) throws CoreException, IOException {
+		IFile iniFile = project.getFile(new Path(TESTINI_FILE));
+		InputStream stream = FileTemplates.testINI(SELENIUM_PLUS, project.getName());
 
-		ClassLoader loader = Thread.currentThread().getContextClassLoader();
+		addFile(project, iniFile, stream);
+	}
 
-		if (testPkg.exists()){
-			IFile testclass = testPkg.getFile(testClass + ".java");
-			InputStream testclassstream = null;
-			if (newProject.getName().equalsIgnoreCase(PROJECTNAME_SAMPLE)){
-				testclassstream = loader.getResourceAsStream(TESTCASECLASS_RESOURCE);
-			} else {
-				testclassstream = FileTemplates.testClass(newProject.getName(),newPackage,mapPkg, testClass);
-			}
-
-			testclass.create(testclassstream, true, null);
-			if (testclassstream != null) testclassstream.close();
-		}
-
-
-		/**
-		 * Create run tests
-		 */
-		String testRunClass = TESTRUNCLASS_FILE;
-		testPkg = newProject.getFolder(paths[2]);
-		tmp_pkg = testPkg.toString();
-		packagedir = tmp_pkg.substring(tmp_pkg.indexOf(paths[0]) + paths[0].length() + 1 , tmp_pkg.length());
-		prjPackage = packagedir;
-		try{ prjPackage = packagedir.substring(0, packagedir.lastIndexOf("/"));}catch(Exception ignore){}
-		newPackage = packagedir.replaceAll("/", ".");
-		mapPackage = prjPackage.replaceAll("/",  ".");
-		mapPkg = mapPackage + "."+ MAPCLASS_FILE;
-
-
-		if (testPkg.exists()){
-			IFile testruns = testPkg.getFile(testRunClass + ".java");
-			InputStream testrunstream = null;
-			if (newProject.getName().equalsIgnoreCase(PROJECTNAME_SAMPLE)){
-				testrunstream =loader.getResourceAsStream(TESTRUNCLASS_RESOURCE);
-			} else {
-				testrunstream = FileTemplates.testRunClass(newProject.getName(),newPackage,mapPkg, testRunClass);
-			}
-
-			testruns.create(testrunstream, true, null);
-			if (testrunstream != null) testrunstream.close();
-		}
-
-
-
-		/**
-		 * Map and Map order files
-		 */
-		IFolder mapFolder = newProject.getFolder(DATAPOOL_DIR);
-
-		if (mapFolder.exists()) {
-
-			if (newProject.getName().equalsIgnoreCase(PROJECTNAME_SAMPLE)){
-
-				IFile appMap = mapFolder.getFile(newProject.getName()+APPMAP_FILE);
-				//InputStream mapstream = BaseProject.class.getResourceAsStream("../../../../samples/App.map");
-				InputStream mapstream = loader.getResourceAsStream(APPMAP_RESOURCE);
-				appMap.create(mapstream, true, null);
-				if (mapstream != null) mapstream.close();
-
-				appMap = mapFolder.getFile(newProject.getName()+APPMAP_EN_FILE);
-				//mapstream = BaseProject.class.getResourceAsStream("../../../../samples/App_zh.map");
-				mapstream = loader.getResourceAsStream(APPMAP_EN_RESOURCE);
-				appMap.create(mapstream, true, null);
-				if (mapstream != null) mapstream.close();
-
-				appMap = mapFolder.getFile(APPMAP_ORDER_FILE);
-				//mapstream = BaseProject.class.getResourceAsStream("../../../../samples/AppMap.order");
-				mapstream = loader.getResourceAsStream(APPMAP_ORDER_RESOURCE);
-				appMap.create(mapstream, true, null);
-				if (mapstream != null) mapstream.close();
-
-			} else {
-
-				IFile appMap = mapFolder.getFile(newProject.getName()+APPMAP_FILE);
-				InputStream mapstream = FileTemplates.appMap();
-				appMap.create(mapstream, true, null);
-				mapstream.close();
-
-				appMap = mapFolder.getFile(newProject.getName()+APPMAP_EN_FILE);
-				mapstream = FileTemplates.appMap();
-				appMap.create(mapstream, true, null);
-				mapstream.close();
-
-				appMap = mapFolder.getFile(APPMAP_ORDER_FILE);
-				mapstream = FileTemplates.appMapOrder(newProject.getName());
-				appMap.create(mapstream, true, null);
-				mapstream.close();
-			}
-		}
-
-		/**
-		 * create test.ini file
-		 */
-		IContainer container = mapFolder.getParent();
-		IFile iniFile = container.getFile(new Path(TESTINI_FILE));
-		InputStream inistream = FileTemplates.testINI(SELENIUM_PLUS,newProject.getName());
-		iniFile.create(inistream, true, null);
-		inistream.close();
-
-		/**
-		 * create commandline bat file
-		 */
-		// TODO WIN and NIX versions of scripts
-		boolean isWin = true;
+	/**
+	 * Add the 'start script', such as runAutomation.bat. It is normally under the project folder.
+	 * @param folder IContainer, the container holding the 'start script'.
+	 * @throws CoreException
+	 * @throws IOException
+	 */
+	private static void addStartScriptFile(IContainer folder) throws CoreException, IOException {
 		IFile batfile =  null;
 		InputStream batstream = null;
 
-		if(isWin){
-			batfile = container.getFile(new Path(RUNAUTOMATION_WIN_FILE));
-			batstream = loader.getResourceAsStream(RUNAUTOMATION_WIN_RESOURCE);
-		}
-		if (batstream != null) {
-			batfile.create(batstream, true, null);
-			batstream.close();
+		if(Console.isWindowsOS()){
+			batfile = folder.getFile(new Path(RUNAUTOMATION_WIN_FILE));
+			batstream = Thread.currentThread().getContextClassLoader().getResourceAsStream(RUNAUTOMATION_WIN_RESOURCE);
+		}else{
+			throw new RuntimeException("Not supported OS: '"+Console.getOsFamilyName()+"'!");
 		}
 
+		addFile(folder, batfile, batstream);
+	}
+
+	/**
+	 * Add spring configuration file. It should be under the source folder.
+	 * @param srcFolder IFolder, the 'src' folder  holding the spring configuration file.
+	 * @throws CoreException
+	 * @throws IOException
+	 */
+	private static void addSpringConfigFile(IFolder srcFolder, String testBasePackage) throws CoreException, IOException {
+
+		IFile file = srcFolder.getFile(new Path(Constants.SPRING_CONFIG_CUSTOM_FILE));
+		InputStream stream = FileTemplates.springConfig(testBasePackage);
+
+		addFile(srcFolder, file, stream);
+	}
+
+	/**
+	 * Add log4j configuration file. It should be under the source folder.
+	 * @param srcFolder IFolder, the 'src' folder  holding the spring configuration file.
+	 * @throws CoreException
+	 * @throws IOException
+	 */
+	private static void addLog4jConfigFile(IFolder srcFolder) throws CoreException, IOException {
+		IFile file = srcFolder.getFile(new Path(Constants.LOG4J2_CONFIG_FILE));
+		if(!file.exists()){
+			InputStream stream = FileTemplates.log4j2Config();
+			addFile(srcFolder, file, stream);
+		}else{
+			Activator.log("Log4j config file "+file.getName()+" has alreday existed!");
+		}
+	}
+
+	/**
+	 * Update the project to add the log4j configuration file.
+	 * @param project
+	 */
+	public static void refreshLog4jConfigFile(IProject project){
+		IFolder srcFolder = null;
+
+		for(String src:SRC_SRC_DIRS){
+			srcFolder = project.getFolder(src);
+			if(srcFolder.exists()) break;
+		}
+		if(!srcFolder.exists()){
+			Activator.log("Cannot detect the project's source folder!");
+			return;
+		}
+
+		try {
+			addLog4jConfigFile(srcFolder);
+		} catch (Exception e) {
+			Activator.error("Cannot update log4j config file, Met "+e.toString());
+		}
 	}
 
 	public static void addNature(IProject project) throws CoreException {
